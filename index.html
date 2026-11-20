@@ -1014,8 +1014,28 @@ function importForm(){
 }
 /* ---------- Tools: import results from a Meta Business Suite export ---------- */
 /*META-START*/
+async function unzipFirstCsv(buf){
+  const dv=new DataView(buf.buffer,buf.byteOffset,buf.byteLength);
+  let e=-1;for(let i=buf.length-22;i>=Math.max(0,buf.length-70000);i--){if(dv.getUint32(i,true)===0x06054b50){e=i;break;}}
+  if(e<0)throw new Error('That zip file could not be read. Unzip it and choose the .csv inside.');
+  let p=dv.getUint32(e+16,true);const n=dv.getUint16(e+10,true);
+  for(let k=0;k<n;k++){
+    if(dv.getUint32(p,true)!==0x02014b50)break;
+    const method=dv.getUint16(p+10,true),csize=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+    const name=new TextDecoder().decode(buf.subarray(p+46,p+46+nl));
+    p+=46+nl+el+cl;
+    if(!/\.csv$/i.test(name))continue;
+    const ds=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true);
+    const data=buf.subarray(ds,ds+csize);
+    if(method===0)return data;
+    if(method===8){const st=new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));return new Uint8Array(await new Response(st).arrayBuffer());}
+    throw new Error('Unsupported zip compression. Unzip it and choose the .csv inside.');
+  }
+  throw new Error('No .csv file was found inside that zip.');}
 async function readCsvFile(f){
-  const buf=new Uint8Array(await f.arrayBuffer());
+  let buf=new Uint8Array(await f.arrayBuffer());
+  if(buf[0]===0x50&&buf[1]===0x4B)buf=await unzipFirstCsv(buf);
+  if(/\.xlsx?$/i.test(f.name||''))throw new Error('This is an Excel file. In Meta, create the report as .csv, or open it in Excel and use Save As, CSV.');
   let enc='utf-8';
   if(buf[0]===0xFF&&buf[1]===0xFE)enc='utf-16le';
   else if(buf[0]===0xFE&&buf[1]===0xFF)enc='utf-16be';
@@ -1052,7 +1072,7 @@ function metaRows(text){
   const all=parseCsv(text);if(all.length<2)throw new Error('That file looks empty.');
   const norm=h=>String(h==null?'':h).replace(/[\u00a0\u200b]/g,' ').replace(/^["'\s]+|["'\s]+$/g,'').replace(/\s+/g,' ').toLowerCase();
   const TIME=['publish time','publish date','date published','published','post publish time','publish_time','time published','created time'];
-  const REACH=['reach','post reach','people reached','accounts reached','lifetime post total reach'];
+  const REACH=['reach','post reach','people reached','accounts reached','lifetime post total reach','reach (lifetime)','total reach','unique reach','viewers'];
   let hi=0;
   for(let i=0;i<Math.min(all.length,10);i++){const h=all[i].map(norm);if(h.some(x=>TIME.includes(x))&&h.some(x=>REACH.includes(x))){hi=i;break;}}
   const rows=all.slice(hi);
@@ -1098,7 +1118,7 @@ function importResultsForm(){
   if(!cid){alert('Add a client first.');return;}
   d.innerHTML=`<h2 style="margin-top:0">Import results from Meta</h2>
   <p>Results are added to the matching posts of <b>${esc(cname)}</b>. In Meta Business Suite, export your post Insights as a CSV and choose the file here. Posts are matched by caption and date. Nothing is created or deleted, and you see a preview first.</p>
-  <input type="file" id="mf" accept=".csv,text/csv"><div id="mo" style="margin:12px 0"></div>
+  <input type="file" id="mf"><div id="mo" style="margin:12px 0"></div>
   <div class="row"><button type="button" class="p" id="mgo" style="display:none">Save results</button><button type="button" id="cx">Close</button></div>`;
   d.showModal();
   $('#cx').onclick=()=>d.close();
