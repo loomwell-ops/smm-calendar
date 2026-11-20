@@ -2617,8 +2617,7 @@ window.adminView=function(){
           openUnifiedPostEditor({
             platform: idea.platform || 'Instagram',
             pillar: idea.pillar || Object.keys(PILLARS)[0],
-            caption: idea.title + (idea.notes ? '
-' + idea.notes : ''),
+            caption: idea.title + (idea.notes ? '\n' + idea.notes : ''),
             status: 'Draft'
           });
         };
@@ -2653,6 +2652,11 @@ window.adminView=function(){
       document.getElementById('murnovaLoginScreen').style.display = 'none';
       document.getElementById('murnovaAppShell').style.display = 'flex';
       renderAllMurnova();
+      requestAnimationFrame(() => {
+        const activeNav = document.querySelector('#mainNav .nav-item.active');
+        if (activeNav) slidePill(document.getElementById('mainNavPill'), document.getElementById('mainNav'), activeNav, false);
+        syncCalViewPill(false);
+      });
     };
 
     const _origClientView = window.clientView;
@@ -2862,7 +2866,8 @@ window.adminView=function(){
         syncCalViewPill(false);
       });
 
-      // Initialize pill position on load
+      // Render initial calendar skeleton immediately & position GSAP pills
+      renderMurnovaCalendar();
       requestAnimationFrame(() => {
         const activeNav = document.querySelector('#mainNav .nav-item.active');
         if (activeNav) slidePill(document.getElementById('mainNavPill'), document.getElementById('mainNav'), activeNav, false);
