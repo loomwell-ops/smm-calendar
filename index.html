@@ -1941,29 +1941,37 @@ window.adminView=function(){
     let mStatus = 'all';
     let mDraggedId = null;
 
-    // GSAP Sliding Pill Helper (Exact motion from First Design)
+    // GSAP Sliding Pill Helper — the real "stretchy" slidePill from the video.
+    // The pill covers the whole container and is clipped with inset() down to the
+    // target button. Leading edge moves fast, trailing edge lags -> the pill stretches.
     function slidePill(pill, box, target, animate = true) {
       if (!pill || !box || !target) return;
-      const L = target.offsetLeft;
-      const T = target.offsetTop;
-      const w = target.offsetWidth;
-      const h = target.offsetHeight;
-      if (!animate || typeof gsap === 'undefined') {
-        pill.style.width = w + 'px';
-        pill.style.height = h + 'px';
-        pill.style.transform = `translate(${L}px, ${T}px)`;
+      const W = pill.offsetWidth, H = pill.offsetHeight;
+      if (!W || !H) { requestAnimationFrame(() => slidePill(pill, box, target, false)); return; }
+      const L = target.offsetLeft, R = W - (L + target.offsetWidth);
+      const T = target.offsetTop,  B = H - (T + target.offsetHeight);
+      const clip = (l, r) => `inset(${T}px ${r}px ${B}px ${l}px round 999px)`;
+      const prev = pill.__lr;
+      pill.__lr = [L, R];
+      pill.__target = target;
+      if (!animate || !prev || typeof gsap === 'undefined') {
+        if (typeof gsap !== 'undefined') gsap.killTweensOf(pill.__o || {});
+        pill.style.clipPath = clip(L, R);
         return;
       }
-      gsap.to(pill, {
-        x: L,
-        y: T,
-        width: w,
-        height: h,
-        duration: 0.36,
-        ease: 'power3.out',
-        overwrite: 'auto'
-      });
+      const o = { l: prev[0], r: prev[1] }, right = L > prev[0];
+      pill.__o = o;
+      const draw = () => { pill.style.clipPath = clip(o.l, o.r); };
+      gsap.killTweensOf(o);
+      gsap.to(o, { l: L, duration: right ? 0.55 : 0.36, ease: right ? 'power3.inOut' : 'power3.out', onUpdate: draw });
+      gsap.to(o, { r: R, duration: right ? 0.36 : 0.55, ease: right ? 'power3.out' : 'power3.inOut', onUpdate: draw });
     }
+    // Keep pills aligned if the window is resized
+    window.addEventListener('resize', () => {
+      document.querySelectorAll('.nav-pill-bg, .seg-pill-bg').forEach(p => {
+        if (p.__target && p.__target.isConnected) slidePill(p, p.parentElement, p.__target, false);
+      });
+    });
 
     // Map V1 Pillar hex colors to Murnova pill classes
     function getPillColorClass(p) {
@@ -2029,6 +2037,14 @@ window.adminView=function(){
       document.querySelectorAll('.tab-view').forEach(v => {
         v.classList.toggle('active', v.id === `view-${tabName}`);
       });
+
+      if (animate && typeof gsap !== 'undefined') {
+        const v = document.getElementById(`view-${tabName}`);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const kids = v ? v.querySelectorAll(':scope > *, .glass-card, .stat-card, .kpi-card') : [];
+          if (kids.length) gsap.fromTo(kids, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.05, clearProps: 'opacity,transform' });
+        }));
+      }
 
       if (tabName === 'calendar') {
         syncCalViewPill(false);

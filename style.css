@@ -176,8 +176,9 @@ body {
 
 .nav-pill-bg {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;               /* covers the whole nav; clip-path trims it to the active tab */
+  clip-path: inset(0 100% 0 0 round 999px);
+  will-change: clip-path;
   background: var(--pill-active-bg);
   border-radius: 999px;
   z-index: 0;
@@ -630,11 +631,11 @@ body {
 
 .seg-pill-bg {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
+  clip-path: inset(0 100% 0 0 round 999px);
+  will-change: clip-path;
   background: var(--surface-card);
   border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   z-index: 0;
   pointer-events: none;
 }
