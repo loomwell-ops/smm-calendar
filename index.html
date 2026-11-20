@@ -151,7 +151,7 @@
       </aside>
 
       <!-- Workspace Area -->
-      <main class="workspace">
+      <main class="workspace is-loading" id="workspaceMain">
         <!-- ================= TAB 1: OVERVIEW ================= -->
         <section class="tab-view" id="view-overview">
           <div class="ov-head">
@@ -179,6 +179,11 @@
                 <span class="count-dot" id="attentionCount">0</span>
               </div>
               <div class="attention-list" id="overviewAttentionList"></div>
+              <div class="digest-row" id="ovDigest" style="display:none">
+                <span>Nudge your client</span>
+                <button type="button" class="btn-secondary btn-sm" id="ovDigestCopy">Copy digest</button>
+                <button type="button" class="btn-secondary btn-sm" id="ovDigestWa">WhatsApp</button>
+              </div>
             </div>
           </div>
 
@@ -2735,6 +2740,15 @@ ${ta.value || topic}`,
         ...posts.filter(p => !seen.has(p.id) && checks(p).length > 0).map(p => ({ p, why: checks(p).join(', ') }))
       ];
       byId('attentionCount').textContent = need.length;
+      const dg = byId('ovDigest');
+      if (dg) {
+        dg.style.display = pendAll.length ? 'flex' : 'none';
+        const msg = () => `Hi ${cname}! ${pendAll.length} post${pendAll.length === 1 ? ' is' : 's are'} waiting for your approval:\n\n` +
+          pendAll.slice(0, 8).map(p => `• ${p.platform} · ${p.post_date || 'No date'}${p.post_time ? ' ' + String(p.post_time).slice(0, 5) : ''}: ${(p.caption || 'No caption').replace(/\s+/g, ' ').slice(0, 70)}`).join('\n') +
+          `\n\nPlease review here: ${location.origin}${location.pathname}`;
+        byId('ovDigestCopy').onclick = async () => { try { await navigator.clipboard.writeText(msg()); toast('Approval digest copied'); } catch (e) { prompt('Copy this message:', msg()); } };
+        byId('ovDigestWa').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(msg()), '_blank', 'noopener');
+      }
       byId('attentionCount').classList.toggle('zero', !need.length);
       const list = byId('overviewAttentionList');
       list.innerHTML = need.slice(0, 4).map(({ p, why }) => {
@@ -2855,7 +2869,7 @@ ${ta.value || topic}`,
     // ======================================================================
     //  ANALYTICS  (range switch, network chips, two animated SVG charts)
     // ======================================================================
-    let anRange = 30, anPlat = 'all', anMetric = 'engagements', chartSeq = 0;
+    let anRange = 30, anPlat = 'all', anMetric = 'engagements', anSmooth = true, chartSeq = 0;
     const DAY = 864e5;
     const midnight = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
     const fmtDay = d => d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
@@ -2863,6 +2877,7 @@ ${ta.value || topic}`,
     const cumA = a => { let s = 0; return a.map(v => (s += v)); };
     const offOf = p => { const d = new Date(p.post_date + 'T00:00'); return isNaN(d) ? NaN : Math.round((d - midnight(new Date())) / DAY); };
     const inRange = (p, days) => { const o = offOf(p); return o >= -(days - 1) && o <= 0; };
+    const smoothA = (a, w) => { if (w < 2) return a; const h = Math.floor(w / 2); return a.map((_, i) => { let s = 0, c = 0; for (let k = i - h; k <= i + h; k++) if (k >= 0 && k < a.length) { s += a[k]; c++; } return s / c; }); };
     const anPosts = () => posts.filter(p => p.post_date && (anPlat === 'all' || p.platform === anPlat));
 
     function anBuild(list, key, days) {
@@ -2999,10 +3014,22 @@ ${ta.value || topic}`,
       const MK = { engagements: ['Engagements', engS], reach: ['Reach', reachS], posts: ['Posts', anBuild(list, 'posts', days)] };
       const [mLabel, S] = MK[anMetric];
       chartBlock(byId('anChartBBody'), {
-        cur: S.cur, prev: S.prev, labels: S.labels, total: sumA(S.cur), prevTotal: sumA(S.prev),
+        cur: anSmooth ? smoothA(S.cur, days > 45 ? 3 : 7) : S.cur, prev: anSmooth ? smoothA(S.prev, days > 45 ? 3 : 7) : S.prev,
+        labels: S.labels, total: sumA(S.cur), prevTotal: sumA(S.prev), fmt: v => (v < 10 && v % 1 ? v.toFixed(1) : bigFmt(v)),
         color: '#8b5cf6', sub: `${mLabel.toLowerCase()}, last ${days} days`, legend: `${mLabel}, this period`, aria: `${mLabel} per ${days > 45 ? '3 days' : 'day'}`, animate
       });
 
+      const rs = list.filter(p => p.reach != null && p.post_date);
+      const DN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], wd = DN.map(() => [0, 0]), hr = {};
+      rs.forEach(p => { const d = new Date(p.post_date + 'T00:00'); if (isNaN(d)) return; const r = +p.reach || 0; wd[d.getDay()][0] += r; wd[d.getDay()][1]++;
+        const H = parseInt(String(p.post_time || '').slice(0, 2), 10); if (!isNaN(H)) { (hr[H] = hr[H] || [0, 0]); hr[H][0] += r; hr[H][1]++; } });
+      const avg = wd.map(([s, c]) => (c ? s / c : 0)), mx = Math.max(...avg), bi = avg.indexOf(mx);
+      const hrs = Object.entries(hr).filter(([, v]) => v[1] >= 2).map(([k, v]) => [+k, v[0] / v[1]]).sort((a, b) => b[1] - a[1]);
+      const h12 = H => (H % 12 || 12) + (H < 12 ? ' AM' : ' PM');
+      byId('anBestBody').innerHTML = rs.length < 5
+        ? `<p class="muted-text">Needs at least 5 posts with results to suggest a time. You have ${rs.length}.</p>`
+        : `<div class="best-wrap"><div class="best-bars">${avg.map((v, i) => `<div class="bb${i === bi ? ' top' : ''}" title="${DN[i]}: ${Math.round(v).toLocaleString()} avg reach (${wd[i][1]} posts)"><span style="height:${mx ? Math.max(4, (v / mx) * 100) : 4}%"></span><em>${DN[i]}</em></div>`).join('')}</div>
+           <div class="best-text"><strong>${DN[bi]}${hrs.length ? ' around ' + h12(hrs[0][0]) : ''}</strong><small>${anPlat === 'all' ? 'across all networks' : 'on ' + esc(anPlat)} · ${rs.length} posts${hrs.length ? '' : ' · add post times for an hour suggestion'}</small></div></div>`;
       const top = tracked.slice().sort((a, b) => (+b.reach || 0) - (+a.reach || 0)).slice(0, 5);
       byId('anTopBody').innerHTML = top.map(p => `
         <button type="button" class="inbox-row top-row" data-open-post="${esc(p.id)}">
@@ -3050,7 +3077,7 @@ ${ta.value || topic}`,
             <div id="anChartABody"></div>
           </div>
           <div class="glass-card chart-card">
-            <div class="card-top-row"><h3 style="flex:1">Engagement &amp; activity</h3></div>
+            <div class="card-top-row"><h3 style="flex:1">Engagement &amp; activity</h3><button type="button" class="btn-secondary btn-sm" id="anSmooth" aria-pressed="${anSmooth}" title="7-day rolling average">${anSmooth ? 'Smoothed ✓' : 'Raw'}</button></div>
             <div class="segmented-control" id="anMetric" style="margin-top:10px"><div class="seg-pill-bg"></div>${mets}</div>
             <div id="anChartBBody" style="margin-top:6px"></div>
           </div>
@@ -3070,6 +3097,10 @@ ${ta.value || topic}`,
               }).join('')}
             </div>
           </div>
+          <div class="glass-card chart-card" style="grid-column:1/-1">
+            <div class="card-top-row"><h3 style="flex:1">Best time to post</h3><span class="muted-text">from your own results, average reach per post</span></div>
+            <div id="anBestBody" style="margin-top:10px"></div>
+          </div>
         </div>`;
 
       // sliding stretchy pills (no animation on first paint)
@@ -3087,6 +3118,7 @@ ${ta.value || topic}`,
       wire(byId('anMetric'), '.seg-btn', b => { anMetric = b.dataset.m; anUpdate(true); });
       wire(byId('anChips'), '.an-chip', b => { anPlat = b.dataset.p; anUpdate(true); });
 
+      byId('anSmooth').onclick = e => { anSmooth = !anSmooth; e.currentTarget.textContent = anSmooth ? 'Smoothed ✓' : 'Raw'; e.currentTarget.setAttribute('aria-pressed', anSmooth); anUpdate(true); };
       byId('anExport').onclick = () => {
         const rows = anPosts().filter(p => p.reach != null && inRange(p, anRange)).sort((a, b) => String(a.post_date).localeCompare(String(b.post_date)));
         const q = v => { let s = String(v ?? '').replace(/\r?\n/g, ' '); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
@@ -3155,6 +3187,7 @@ ${ta.value || topic}`,
     }
 
     function renderAllMurnova() {
+      const _ws = document.getElementById('workspaceMain'); if (_ws) _ws.classList.remove('is-loading');
       syncClientDropdown();
       updateNavBadges();
       if (mTab === 'calendar') renderMurnovaCalendar();
@@ -3464,5 +3497,24 @@ ${ta.value || topic}`,
     });
   })();
   </script>
+<script>
+/* Keyboard shortcuts: 1-6 switch tabs, N = new post, ? = help */
+(function(){
+  const tabs=['overview','calendar','inbox','approvals','analytics','listening'];
+  document.addEventListener('keydown',e=>{
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    const t=e.target,tag=(t&&t.tagName||'').toLowerCase();
+    if(['input','textarea','select'].includes(tag)||(t&&t.isContentEditable)||document.querySelector('dialog[open]'))return;
+    if(!document.getElementById('app-shell-ready')&&typeof window.switchMurnovaTab!=='function')return;
+    if(e.key>='1'&&e.key<='6'){window.switchMurnovaTab(tabs[+e.key-1],true);}
+    else if(e.key==='n'||e.key==='N'){const b=document.getElementById('ovNewPostBtn');if(b){e.preventDefault();b.click();}}
+    else if(e.key==='?'){if(window.toast)window.toast('Shortcuts: 1-6 switch tabs · N new post · Ctrl+K search');}
+  });
+})();
+/* Offline install (HTTPS / GitHub Pages only) */
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
 </body>
 </html>
