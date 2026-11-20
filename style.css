@@ -1329,3 +1329,220 @@ body {
   .day-cell { min-height: 82px; }
   .three-col, .two-col { grid-template-columns: 1fr; }
 }
+
+
+/* ==========================================================================
+   V1 BACKEND & AUTOMATION COMPONENT BRIDGE STYLES
+   ========================================================================== */
+#dlg {
+  border: 1px solid var(--border-strong);
+  border-radius: 22px;
+  background: var(--surface-card);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  color: var(--text-primary);
+  width: min(640px, 94vw);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 24px;
+  box-shadow: var(--shadow-shell);
+}
+#dlg::backdrop {
+  background: rgba(10, 10, 22, 0.55);
+  backdrop-filter: blur(6px);
+}
+#dlg h2, #dlg h3 {
+  margin-bottom: 10px;
+}
+#dlg input, #dlg select, #dlg textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+#dlg label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 10px;
+}
+#dlg button {
+  cursor: pointer;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 0.83rem;
+  font-weight: 500;
+  transition: transform 0.14s ease, opacity 0.2s ease;
+}
+#dlg button.p {
+  background: var(--accent-primary);
+  color: var(--accent-primary-text);
+  border-color: transparent;
+  font-weight: 600;
+}
+#dlg button.ok {
+  background: #10b981;
+  color: #fff;
+  border-color: transparent;
+}
+#dlg button.bad {
+  background: #ef4444;
+  color: #fff;
+  border-color: transparent;
+}
+#dlg .row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+#dlg .g2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 12px;
+}
+.pc {
+  border: 1px solid var(--border-glass);
+  border-radius: 14px;
+  background: var(--surface-subtle);
+  max-width: 480px;
+  margin: 10px auto;
+  overflow: hidden;
+}
+.pc .ph { display: flex; gap: 10px; align-items: center; padding: 10px 12px; }
+.av { width: 38px; height: 38px; border-radius: 50%; background: #8b5cf6; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; object-fit: cover; flex: none; }
+.pn { font-weight: 700; font-size: 0.88rem; }
+.ps { font-size: 0.75rem; color: var(--text-muted); }
+.pc .pb { padding: 0 12px 10px; white-space: pre-wrap; word-break: break-word; font-size: 0.85rem; }
+.pimg { display: block; width: 100%; max-height: 380px; object-fit: cover; margin-bottom: 8px; }
+.ptags { color: #8b5cf6; margin-top: 4px; }
+.pf2 { display: flex; gap: 16px; padding: 8px 12px; border-top: 1px solid var(--border-glass); color: var(--text-muted); font-size: 0.78rem; }
+.cm { border-top: 1px solid var(--border-glass); padding: 8px 0; font-size: 0.83rem; }
+.cm small { color: var(--text-muted); }
+.upl { margin-top: 12px; padding: 12px; border: 1px dashed var(--border-strong); border-radius: 12px; }
+.upl .um { display: flex; gap: 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--border-glass); }
+.upl .um:first-of-type { border-top: 0; }
+.upl img { width: 44px; height: 44px; object-fit: cover; border-radius: 8px; }
+.warn { background: rgba(245, 158, 11, 0.16); color: #b45309; border-radius: 10px; padding: 8px 12px; margin: 8px 0; font-size: 0.82rem; }
+[data-theme="dark"] .warn { color: #fcd34d; }
+.err { color: #ef4444; font-size: 0.82rem; min-height: 18px; }
+
+/* Login Overlay matching Murnova Glassmorphic Aesthetic */
+.murnova-login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.murnova-login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  border-radius: 24px;
+  background: var(--surface-card);
+  backdrop-filter: blur(26px) saturate(145%);
+  -webkit-backdrop-filter: blur(26px) saturate(145%);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-shell);
+}
+.murnova-login-card h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 4px; }
+.murnova-login-card p.sub { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px; }
+.murnova-login-card label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-top: 12px; margin-bottom: 4px; }
+.murnova-login-card input { width: 100%; padding: 10px 13px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--surface-subtle); color: var(--text-primary); font-family: inherit; }
+
+/* Board View (Kanban Automation) inside Murnova Calendar Area */
+.murnova-board {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  align-items: flex-start;
+}
+.murnova-bcol {
+  flex: 1 0 215px;
+  min-width: 215px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  padding: 12px;
+  min-height: 320px;
+}
+.murnova-bcol.drag-over {
+  outline: 2px dashed #8b5cf6;
+  outline-offset: -2px;
+}
+.murnova-bcol-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.84rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-glass);
+}
+.murnova-bcard {
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-glass);
+  margin-bottom: 8px;
+  cursor: grab;
+  transition: transform 0.15s ease;
+}
+.murnova-bcard:hover { transform: translateY(-1px); }
+
+/* Automation Toolbar Pill Bar */
+.auto-tools-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.auto-chip {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-glass);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.18s ease;
+}
+.auto-chip:hover {
+  background: var(--surface-hover);
+}
+.client-switcher-select {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+.ccount { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.ccount.near { color: #d97706; font-weight: 600; }
+.ccount.over { color: #dc2626; font-weight: 700; }
