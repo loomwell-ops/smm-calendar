@@ -48,6 +48,9 @@
       <div style="text-align:center;margin-top:12px;">
         <button type="button" id="mForgotBtn" class="btn-ghost btn-sm">Forgot password?</button>
       </div>
+      <div style="text-align:center;margin-top:12px;border-top:1px solid rgba(128,128,160,.25);padding-top:12px;">
+        <button type="button" id="mDemoAdmin" class="btn-ghost btn-sm" onclick="startDemo('admin')">Try the demo (agency view)</button>
+      </div>
     </form>
   </div>
 
@@ -437,7 +440,96 @@
 const SB_URL='https://ognxncsuxhaewpvxrcwi.supabase.co';
 const SB_KEY='sb_publishable_hxHsGW9la9lXCsK9pnwe6A_ANQjFJ3u';
 const INVITED=/type=invite/.test(location.hash);
-const sb=supabase.createClient(SB_URL,SB_KEY);
+/* ===== DEMO MODE: in-memory stand-in for Supabase. Nothing is saved or sent anywhere. ===== */
+const realSb=supabase.createClient(SB_URL,SB_KEY);
+let sb=realSb,DEMO=null;
+const DEMO_CLIENT='demo-client',DEMO_ADMIN='demo-admin',DEMO_CLI_USER='demo-cli-user';
+function demoSeed(){
+  const n=new Date(),y=n.getFullYear(),m=n.getMonth(),pad=v=>String(v).padStart(2,'0');
+  const d=day=>y+'-'+pad(m+1)+'-'+pad(day),today=n.getDate();
+  const P=(day,time,platform,pillar,format,status,approval,caption,extra={})=>({id:'dp'+day+platform.slice(0,2)+time.slice(0,2),client_id:DEMO_CLIENT,post_date:d(day),post_time:time+':00',platform,pillar,format,status,approval,caption,visual:'',hashtags:'#SunriseDental #HealthySmiles',campaign:'',due_date:approval==='Pending'?d(Math.max(1,Math.min(28,day-3))):null,account:'',...extra});
+  const posts=[
+    P(2,'09:00','Instagram','Educational','Carousel','Posted','Approved','5 habits that protect your enamel (swipe for #3).',{reach:4120,likes:312,comments_count:28,shares_saves:96,engagements:436}),
+    P(4,'12:00','Facebook','Promo','Static Photo','Posted','Approved','New patient special: free whitening kit with your first cleaning.',{reach:2890,likes:141,comments_count:19,shares_saves:22,engagements:182}),
+    P(6,'10:00','TikTok','Behind the Scenes','Reel','Posted','Approved','A day in the life at Sunrise Dental.',{reach:9800,likes:870,comments_count:64,shares_saves:210,engagements:1144}),
+    P(9,'11:00','Google Business Profile','Promo','Static Photo','Posted','Approved','Open Saturdays this month. Book online in 60 seconds.',{reach:1540,link_clicks:63,engagements:63}),
+    P(11,'09:30','Instagram','Testimonials','Static Photo','Posted','Approved','"I used to dread the dentist. Not anymore." Thank you, Maria!',{reach:3310,likes:276,comments_count:31,shares_saves:48,engagements:355}),
+    P(13,'13:00','LinkedIn','Community','Text Only','Posted','Approved','Proud to sponsor the Provo Youth Soccer league again this season.',{reach:1220,likes:88,engagements:101}),
+    P(16,'10:00','Facebook','Educational','Video','Scheduled','Approved','Why do gums bleed when you floss? A hygienist explains.'),
+    P(18,'12:00','Instagram','Spotlight','Reel','Scheduled','Approved','Meet Dr. Patel: 12 years of gentle dentistry.'),
+    P(Math.min(today+1,27),'09:00','Instagram','Educational','Carousel','Client review','Pending','Holiday sweets and your teeth: what to eat, what to skip.'),
+    P(Math.min(today+2,27),'12:00','Facebook','Promo','Static Photo','Client review','Pending','Use your dental benefits before they reset on Dec 31. Book now!'),
+    P(Math.min(today+3,28),'10:30','TikTok','Trending','Reel','Client review','Pending','POV: you finally booked that cleaning.'),
+    P(Math.min(today+4,28),'11:00','Google Business Profile','Community','Static Photo','Client review','Pending','Toy drive: drop off a new toy and get a free kids\' checkup voucher.'),
+    P(Math.min(today+5,28),'09:00','LinkedIn','Spotlight','Text Only','Draft','Pending','Hiring: friendly front-desk coordinator. Apply today.'),
+    P(Math.min(today+6,29),'14:00','Instagram','Testimonials','Carousel','Client review','Changes requested','Before and after: Luis\'s Invisalign journey.',{id:'dp-changes'}),
+    P(Math.min(today+7,30),'10:00','Facebook','Behind the Scenes','Video','Draft','Pending','Sneak peek at our new waiting room.'),
+    P(Math.min(today+8,30),'12:00','TikTok','Educational','Reel','Draft','Pending','3 myths about teeth whitening, busted.')
+  ].filter((p,i,a)=>a.findIndex(q=>q.id===p.id)===i);
+  const ago=h=>new Date(Date.now()-h*36e5).toISOString();
+  return {
+    profiles:[{id:DEMO_ADMIN,role:'admin',client_id:null,email:'you@agency.com'},{id:DEMO_CLI_USER,role:'client',client_id:DEMO_CLIENT,email:'owner@sunrisedental.com'}],
+    clients:[{id:DEMO_CLIENT,name:'Sunrise Dental (demo client)'}],
+    posts,
+    key_dates:[{id:'k1',client_id:DEMO_CLIENT,key_date:d(27),label:'Thanksgiving',title:'Thanksgiving',name:'Thanksgiving'}],
+    client_settings:[{client_id:DEMO_CLIENT,tz:'America/Denver',brand_color:'#7c5cd6'}],
+    hashtag_sets:[],ideas:[],post_media:[],post_versions:[],post_history:[],
+    comments:[
+      {id:'c1',post_id:'dp-changes',author_id:DEMO_CLI_USER,body:'Love it, but can we use Luis\'s first name only? He asked for that.',created_at:ago(5),resolved:false},
+      {id:'c2',post_id:'dp-changes',author_id:DEMO_ADMIN,body:'Of course, I\'ll update the caption and resend.',created_at:ago(3),resolved:false}
+    ]
+  };
+}
+function demoClient(role){
+  const db=demoSeed(),uid=role==='admin'?DEMO_ADMIN:DEMO_CLI_USER;
+  const tbl=t=>t==='client_posts'?'posts':t;
+  function Q(table){
+    const t=tbl(table);let op='select',payload=null,f=[],ord=[],rng=null,one=null;
+    const q={
+      select(){return q;},insert(v){op='insert';payload=v;return q;},update(v){op='update';payload=v;return q;},delete(){op='delete';return q;},upsert(v){op='insert';payload=v;return q;},
+      eq(c,v){f.push(r=>r[c]===v);return q;},neq(c,v){f.push(r=>r[c]!==v);return q;},gt(c,v){f.push(r=>String(r[c]??'')>String(v));return q;},
+      in(c,a){f.push(r=>a.includes(r[c]));return q;},is(c,v){f.push(r=>(r[c]??null)===v);return q;},
+      order(c,o){ord.push([c,o&&o.ascending===false?-1:1]);return q;},range(a,b){rng=[a,b];return q;},limit(){return q;},
+      maybeSingle(){one='maybe';return q;},single(){one='single';return q;},
+      then(res,rej){return Promise.resolve(run()).then(res,rej);}
+    };
+    function run(){
+      const rows=db[t]||(db[t]=[]);
+      if(op==='insert'){const a=(Array.isArray(payload)?payload:[payload]).map(r=>({id:'demo'+Math.random().toString(36).slice(2,9),client_id:DEMO_CLIENT,created_at:new Date().toISOString(),author_id:uid,...r}));rows.push(...a);return {data:one?a[0]:a,error:null};}
+      let hit=rows.filter(r=>f.every(fn=>fn(r)));
+      if(op==='update'){hit.forEach(r=>Object.assign(r,payload));return {data:hit,error:null};}
+      if(op==='delete'){hit.forEach(r=>rows.splice(rows.indexOf(r),1));return {data:hit,error:null};}
+      ord.slice().reverse().forEach(([c,dir])=>hit.sort((a,b)=>(a[c]>b[c]?1:a[c]<b[c]?-1:0)*dir));
+      if(rng)hit=hit.slice(rng[0],rng[1]+1);
+      if(one)return {data:hit[0]||null,error:null};
+      return {data:hit.map(r=>({...r})),error:null};
+    }
+    return q;
+  }
+  return {
+    from:Q,
+    rpc:async(name,a)=>{if(name==='set_approval'){const p=db.posts.find(x=>x.id===a.p_post);if(p){p.approval=a.p_approval;if(a.p_approval==='Approved'&&p.status==='Client review')p.status='Approved';}}return {data:null,error:null};},
+    auth:{
+      getSession:async()=>({data:{session:{user:{id:uid,email:'demo@example.com'}}}}),
+      signOut:async()=>{sb=realSb;DEMO=null;document.getElementById('demoPill')?.remove();return {error:null};},
+      onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),
+      signInWithPassword:async()=>({error:{message:'demo'}}),resetPasswordForEmail:async()=>({error:null}),
+      updateUser:async()=>({error:{message:'Not available in the demo.'}})
+    },
+    channel:()=>({on(){return this;},subscribe(){return this;}}),removeChannel(){},
+    storage:{from:()=>({getPublicUrl:()=>({data:{publicUrl:''}}),upload:async()=>({data:null,error:{message:'Uploads are disabled in the demo.'}}),remove:async()=>({error:null}),createSignedUrl:async()=>({data:null,error:{message:'Demo'}})})},
+    functions:{invoke:async()=>({data:null,error:{message:'Not available in the demo.'}})}
+  };
+}
+function startDemo(role){
+  DEMO=role;sb=demoClient(role);
+  if(!document.getElementById('demoPill')){const p=document.createElement('div');p.id='demoPill';
+    p.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;background:#1f1b3a;color:#fff;font:600 13px system-ui,sans-serif;padding:8px 14px;border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.35)';
+    p.innerHTML='Demo mode: sample data, nothing is saved. <a href="#" id="demoExit" style="color:#c9b8ff;margin-left:8px">Exit</a>';
+    document.body.appendChild(p);document.getElementById('demoExit').onclick=e=>{e.preventDefault();location.reload();};}
+  boot();
+}
+
 // Clients read from this source. After running rls-hardening.sql, change to 'client_posts' to hide notes/results at the database level.
 const CLIENT_SRC='client_posts';
 const CLIENT_COLS='id,client_id,post_date,post_time,platform,pillar,format,status,approval,caption,visual,hashtags,campaign,due_date,account';
@@ -1841,7 +1933,9 @@ async function boot(){
   try{await boot0();}
   catch(e){$('#app').innerHTML='<div class="login"><h1 style="margin-top:0">Can\u2019t connect</h1><p>Check your internet connection and try again.</p><button class="p" id="rt" style="width:100%">Try again</button></div>';$('#rt').onclick=boot;}
 }
-boot().then(()=>{if(INVITED&&me){history.replaceState(null,'',location.pathname);pwForm(true);}});
+const _start=()=>boot().then(()=>{if(INVITED&&me){history.replaceState(null,'',location.pathname);pwForm(true);}});
+/* Wait for the page's later scripts (which override loginView/adminView) before booting, otherwise the login form renders into a hidden container. */
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',_start):_start();
 </script>
 <script>
 /* Add-ons: caption counter, Board view, "Duplicate now". Runs after the main script; needs no database changes. */

@@ -90,12 +90,12 @@ body {
 }
 
 .bg-light {
-  background-image: url('./assets/bg-light.webp');
+  background-image: url('./assets/bg-light.webp'), url('./bg-light.webp');
   opacity: 1;
 }
 
 .bg-dark {
-  background-image: url('./assets/bg-dark.jpg');
+  background-image: url('./assets/bg-dark.jpg'), url('./bg-dark.jpg');
   opacity: 0;
 }
 
