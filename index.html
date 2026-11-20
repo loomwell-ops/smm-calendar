@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Murnova — Social Media Management & Publishing Calendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Background Image Layers -->
+  <div class="bg-layer bg-light"></div>
+  <div class="bg-layer bg-dark"></div>
+  <div class="bg-overlay"></div>
+
+  <!-- Main App Shell -->
+  <div class="app-shell">
+    <!-- Top Navigation Bar -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="2" width="20" height="20" rx="6" fill="currentColor" fill-opacity="0.14"/>
+            <path d="M7 15V9L10.5 13L14 9V15M17 9V15" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="brand-name">murnova</span>
+      </div>
+
+      <!-- Sliding Pill Navigation (Inspired by reference video's slidePill) -->
+      <nav class="main-nav" id="mainNav" aria-label="Primary Navigation">
+        <div class="nav-pill-bg" id="mainNavPill"></div>
+        <button class="nav-item active" data-tab="overview">Overview</button>
+        <button class="nav-item" data-tab="calendar">Calendar</button>
+        <button class="nav-item" data-tab="inbox">Inbox <span class="badge">10</span></button>
+        <button class="nav-item" data-tab="approvals">Approvals <span class="badge">3</span></button>
+        <button class="nav-item" data-tab="analytics">Analytics</button>
+        <button class="nav-item" data-tab="listening">Listening</button>
+      </nav>
+
+      <!-- Right Controls -->
+      <div class="topbar-actions">
+        <button class="icon-btn" id="searchTrigger" title="Search posts (Ctrl+K)" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+        </button>
+
+        <button class="icon-btn theme-toggle" id="themeToggle" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+          </svg>
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+          </svg>
+        </button>
+
+        <button class="icon-btn notif-btn" id="exportDataBtn" title="Export / Import JSON Backup">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
+
+        <div class="avatar" title="Camila — Content Lead">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%238b5cf6'/%3E%3Cstop offset='100%25' stop-color='%23ec4899'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='40' height='40' rx='20' fill='url(%23g)'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Inter,sans-serif' font-weight='600' font-size='15'%3EC%3C/text%3E%3C/svg%3E" alt="Camila" />
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Body with Left Icon Rail + Workspace -->
+    <div class="app-body">
+      <!-- Left Icon Sidebar -->
+      <aside class="left-rail" aria-label="Quick Tools">
+        <button class="rail-btn active" data-tab-jump="calendar" title="Publishing Calendar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </button>
+        <button class="rail-btn" id="quickNewPostRail" title="Compose Post">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+          </svg>
+        </button>
+        <button class="rail-btn" data-tab-jump="analytics" title="Performance Metrics">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+        </button>
+        <button class="rail-btn" data-tab-jump="approvals" title="Approval Queue">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </button>
+        <div class="rail-spacer"></div>
+        <button class="rail-btn" id="resetDemoBtn" title="Reset Demo Data">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+          </svg>
+        </button>
+      </aside>
+
+      <!-- Workspace Area -->
+      <main class="workspace">
+        <!-- ================= TAB 1: OVERVIEW ================= -->
+        <section class="tab-view active" id="view-overview">
+          <div class="overview-header">
+            <div>
+              <h1 class="hero-title">Afternoon,<br>Camila</h1>
+            </div>
+            <div class="kpi-strip">
+              <div class="kpi-card">
+                <div class="kpi-label">Posts scheduled <span class="trend up">+18%</span></div>
+                <div class="kpi-val" id="ovScheduledCount">16</div>
+                <div class="kpi-sub">across 5 platforms this month</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Pending approval</div>
+                <div class="kpi-val" id="ovPendingCount">3</div>
+                <div class="kpi-sub">ready for final review</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Avg. engagement <span class="trend up">+14.2%</span></div>
+                <div class="kpi-val">6.84%</div>
+                <div class="kpi-sub">vs 5.98% last 30 days</div>
+              </div>
+              <button class="btn-primary btn-pill" id="ovNewPostBtn">
+                <span>+</span> New post
+              </button>
+            </div>
+          </div>
+
+          <div class="overview-grid">
+            <!-- Left Feature Card (Inspired by video frame 00:00) -->
+            <div class="glass-card spotlight-card">
+              <div class="card-top-row">
+                <span class="pill-tag">Focus Campaign</span>
+                <span class="muted-text">Updated just now</span>
+              </div>
+              <div class="spotlight-body">
+                <div class="spotlight-visual">
+                  <div class="ambient-box">
+                    <span class="ambient-badge">Q4 LAUNCH</span>
+                    <div class="ambient-wave"></div>
+                  </div>
+                </div>
+                <div class="spotlight-info">
+                  <div class="big-stat">19 h 34 min</div>
+                  <p class="muted-text">Estimated audience watch-time &amp; story retention across scheduled Reels, Shorts, and carousels this week.</p>
+                  <div class="mini-progress">
+                    <div class="mini-progress-bar" style="width: 78%"></div>
+                  </div>
+                  <div class="spotlight-actions">
+                    <button class="btn-secondary btn-sm" data-tab-jump="calendar">Open Calendar →</button>
+                    <button class="btn-ghost btn-sm" data-tab-jump="analytics">View Reach</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Queue Card -->
+            <div class="glass-card queue-card">
+              <div class="card-top-row">
+                <h3>Needs your attention</h3>
+                <span class="badge-soft" id="attentionCount">3 items</span>
+              </div>
+              <div class="attention-list" id="overviewAttentionList">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Campaign Progress Strip -->
+          <div class="glass-card campaigns-strip">
+            <div class="card-top-row">
+              <h3>Active Content Pillars</h3>
+              <span class="muted-text">Click a pillar to filter calendar</span>
+            </div>
+            <div class="pillars-row" id="overviewPillars"></div>
+          </div>
+        </section>
+
+        <!-- ================= TAB 2: PUBLISHING CALENDAR (PRIMARY VIEW) ================= -->
+        <section class="tab-view" id="view-calendar">
+          <div class="cal-header">
+            <div class="cal-title-group">
+              <h1 class="page-title">Publishing<br>calendar</h1>
+            </div>
+
+            <!-- Sliding Pill Switcher: Week / Month / Timeline -->
+            <div class="segmented-control" id="calViewSwitcher">
+              <div class="seg-pill-bg" id="calViewPill"></div>
+              <button class="seg-btn" data-calview="week">Week</button>
+              <button class="seg-btn active" data-calview="month">Month</button>
+              <button class="seg-btn" data-calview="timeline">Timeline</button>
+            </div>
+
+            <div class="cal-header-actions">
+              <button class="btn-secondary" id="todayBtn">Today</button>
+              <button class="btn-primary" id="newPostBtn">+ New post</button>
+            </div>
+          </div>
+
+          <!-- Social Platform Filter Bar -->
+          <div class="platform-filter-bar" id="platformFilters">
+            <button class="plat-chip active" data-platform="all">
+              <span class="dot all-dot"></span> All channels
+            </button>
+            <button class="plat-chip" data-platform="instagram">
+              <span class="plat-icon ig">IG</span> Instagram
+            </button>
+            <button class="plat-chip" data-platform="linkedin">
+              <span class="plat-icon li">in</span> LinkedIn
+            </button>
+            <button class="plat-chip" data-platform="x">
+              <span class="plat-icon tw">𝕏</span> X / Twitter
+            </button>
+            <button class="plat-chip" data-platform="youtube">
+              <span class="plat-icon yt">▶</span> YouTube
+            </button>
+            <button class="plat-chip" data-platform="tiktok">
+              <span class="plat-icon tt">♪</span> TikTok
+            </button>
+
+            <div class="filter-spacer"></div>
+
+            <!-- Status Filter -->
+            <select id="statusFilter" class="compact-select" aria-label="Filter by status">
+              <option value="all">All statuses</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending approval</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+
+          <!-- Calendar Main Layout (Left Schedule + Right Mini Calendar & Unscheduled Drafts) -->
+          <div class="calendar-workspace">
+            <!-- Main Calendar Grid Container -->
+            <div class="glass-card cal-main-card">
+              <div class="cal-toolbar">
+                <div class="month-nav">
+                  <button class="icon-btn-sm" id="prevPeriodBtn" title="Previous">‹</button>
+                  <h2 id="currentPeriodLabel">November 2026</h2>
+                  <button class="icon-btn-sm" id="nextPeriodBtn" title="Next">›</button>
+                </div>
+                <div class="legend-pills">
+                  <span class="legend-item"><i class="status-dot approved"></i>Approved</span>
+                  <span class="legend-item"><i class="status-dot scheduled"></i>Scheduled</span>
+                  <span class="legend-item"><i class="status-dot pending"></i>Pending</span>
+                  <span class="legend-item"><i class="status-dot draft"></i>Draft</span>
+                </div>
+              </div>
+
+              <!-- Dynamic View Container (Month / Week / Timeline) -->
+              <div id="calendarRenderArea" class="calendar-render-area"></div>
+            </div>
+
+            <!-- Right Inspector / Mini Month & Drafts Drawer -->
+            <aside class="cal-side-panel">
+              <!-- Mini Calendar -->
+              <div class="glass-card mini-cal-card">
+                <div class="mini-cal-head">
+                  <span id="miniCalLabel" class="mini-cal-title">November 2026</span>
+                  <div class="mini-cal-arrows">
+                    <button id="miniPrevBtn" aria-label="Previous Month">‹</button>
+                    <button id="miniNextBtn" aria-label="Next Month">›</button>
+                  </div>
+                </div>
+                <div class="mini-cal-weekdays">
+                  <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+                </div>
+                <div class="mini-cal-grid" id="miniCalGrid"></div>
+              </div>
+
+              <!-- Unscheduled Drafts (Drag onto any date!) -->
+              <div class="glass-card drafts-card">
+                <div class="drafts-head">
+                  <h3>Unscheduled drafts</h3>
+                  <button class="text-link" id="quickAddDraftBtn">+ Add</button>
+                </div>
+                <p class="drafts-hint">Drag a draft onto any calendar day to schedule it.</p>
+                <div class="drafts-list" id="unscheduledDraftsList"></div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- ================= TAB 3: INBOX ================= -->
+        <section class="tab-view" id="view-inbox">
+          <div class="section-head">
+            <div>
+              <h1 class="page-title">Social<br>Inbox</h1>
+            </div>
+            <span class="pill-tag">10 unread mentions &amp; DMs</span>
+          </div>
+          <div class="glass-card inbox-container" id="inboxContainer"></div>
+        </section>
+
+        <!-- ================= TAB 4: APPROVALS ================= -->
+        <section class="tab-view" id="view-approvals">
+          <div class="section-head">
+            <div>
+              <h1 class="page-title">Content<br>Approvals</h1>
+            </div>
+            <button class="btn-primary" id="appNewPostBtn">+ Submit for review</button>
+          </div>
+          <div class="approvals-grid" id="approvalsGrid"></div>
+        </section>
+
+        <!-- ================= TAB 5: ANALYTICS ================= -->
+        <section class="tab-view" id="view-analytics">
+          <div class="overview-header">
+            <div>
+              <h1 class="hero-title">Analytics</h1>
+            </div>
+            <div class="kpi-strip">
+              <div class="kpi-card">
+                <div class="kpi-label">Total audience <span class="trend up">+8.4%</span></div>
+                <div class="kpi-val">255.4K</div>
+                <div class="kpi-sub">+19.8K new followers</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Impressions <span class="trend up">+21.5%</span></div>
+                <div class="kpi-val">1.42M</div>
+                <div class="kpi-sub">last 30 days</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Engagement rate <span class="trend up">+1.2%</span></div>
+                <div class="kpi-val">6.84%</div>
+                <div class="kpi-sub">industry avg: 3.4%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-grid">
+            <div class="glass-card chart-card">
+              <div class="card-top-row">
+                <div>
+                  <h3>Audience growth</h3>
+                  <div class="big-stat">+73.6K <span class="trend up">+12.4%</span></div>
+                </div>
+                <span class="muted-text">Last 7 months</span>
+              </div>
+              <svg class="spark-svg" viewBox="0 0 500 170" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="areaGrad1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity="0.32"/>
+                    <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,145 C70,138 110,115 170,118 C230,121 270,82 330,74 C390,66 440,35 500,22 L500,170 L0,170 Z" fill="url(#areaGrad1)"/>
+                <path d="M0,145 C70,138 110,115 170,118 C230,121 270,82 330,74 C390,66 440,35 500,22" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <div class="glass-card chart-card">
+              <div class="card-top-row">
+                <div>
+                  <h3>Impressions &amp; engagement</h3>
+                  <div class="big-stat">7.97M <span class="trend up">+18.9%</span></div>
+                </div>
+                <span class="muted-text">Cross-channel reach</span>
+              </div>
+              <svg class="spark-svg" viewBox="0 0 500 170" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="areaGrad2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.32"/>
+                    <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,130 C80,100 130,125 200,90 C270,55 320,85 390,48 C440,25 475,30 500,18 L500,170 L0,170 Z" fill="url(#areaGrad2)"/>
+                <path d="M0,130 C80,100 130,125 200,90 C270,55 320,85 390,48 C440,25 475,30 500,18" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB 6: LISTENING ================= -->
+        <section class="tab-view" id="view-listening">
+          <div class="section-head">
+            <div>
+              <h1 class="page-title">Social<br>Listening</h1>
+            </div>
+            <span class="pill-tag">Brand Sentiment: 92% Positive</span>
+          </div>
+          <div class="glass-card listening-card" id="listeningList"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- ================= CREATE / EDIT POST MODAL ================= -->
+  <div class="modal-backdrop" id="postModal" aria-hidden="true">
+    <div class="modal-dialog glass-card">
+      <div class="modal-header">
+        <h2 id="modalTitle">Schedule New Post</h2>
+        <button class="icon-btn-sm" id="closeModalBtn" aria-label="Close">✕</button>
+      </div>
+
+      <form id="postForm" class="post-form">
+        <input type="hidden" id="postId" />
+
+        <div class="form-row two-col">
+          <div class="form-group">
+            <label for="postPlatform">Channel</label>
+            <select id="postPlatform" required>
+              <option value="instagram">Instagram</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="x">X / Twitter</option>
+              <option value="youtube">YouTube</option>
+              <option value="tiktok">TikTok</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="postFormat">Format</label>
+            <select id="postFormat">
+              <option value="Carousel">Carousel</option>
+              <option value="Reel / Short">Reel / Short</option>
+              <option value="Single Image">Single Image</option>
+              <option value="Text Thread">Text Thread</option>
+              <option value="Video">Long-form Video</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="postTitle">Campaign / Post Title</label>
+          <input type="text" id="postTitle" placeholder="e.g., Q4 Product Teaser Carousel" required />
+        </div>
+
+        <div class="form-group">
+          <label for="postCaption">Caption &amp; Hashtags</label>
+          <textarea id="postCaption" rows="3" placeholder="Write engaging copy, CTA, and hashtags..."></textarea>
+        </div>
+
+        <div class="form-row three-col">
+          <div class="form-group">
+            <label for="postDate">Publish Date (leave empty for Draft)</label>
+            <input type="date" id="postDate" />
+          </div>
+
+          <div class="form-group">
+            <label for="postTime">Time</label>
+            <input type="time" id="postTime" value="10:00" />
+          </div>
+
+          <div class="form-group">
+            <label for="postStatus">Status</label>
+            <select id="postStatus">
+              <option value="scheduled">Scheduled</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending approval</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row two-col">
+          <div class="form-group">
+            <label for="postPillar">Content Pillar</label>
+            <select id="postPillar">
+              <option value="Product Launch">Product Launch</option>
+              <option value="Educational">Educational</option>
+              <option value="Behind the Scenes">Behind the Scenes</option>
+              <option value="Community">Community</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="postColor">Card Accent</label>
+            <select id="postColor">
+              <option value="emerald">Emerald Green</option>
+              <option value="violet">Royal Violet</option>
+              <option value="rose">Coral Rose</option>
+              <option value="amber">Warm Amber</option>
+              <option value="sky">Ocean Sky</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-danger-ghost" id="deletePostBtn" style="display:none;">Delete</button>
+          <div class="footer-right">
+            <button type="button" class="btn-secondary" id="cancelModalBtn">Cancel</button>
+            <button type="submit" class="btn-primary">Save Post</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
