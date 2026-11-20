@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -1999,8 +1999,9 @@ window.adminView=function(){
 
     // Theme Switcher (Light & Dark Ribbon Wallpapers)
     function initMurnovaTheme() {
-      const saved = localStorage.getItem('loomwellops_theme_v4') || 'light';
-      document.documentElement.setAttribute('data-theme', saved);
+      const initial = 'dark';
+      document.documentElement.setAttribute('data-theme', initial);
+      localStorage.setItem('loomwellops_theme_v4', initial);
       document.getElementById('themeToggle').onclick = () => {
         const cur = document.documentElement.getAttribute('data-theme');
         const next = cur === 'light' ? 'dark' : 'light';
@@ -2194,8 +2195,7 @@ window.adminView=function(){
       document.getElementById('genHooksBtn').onclick = () => {
         const platform = pl ? pl.value : 'Instagram';
         const pillar = pil ? pil.value : 'Educational';
-        const topic = (ta.value.trim().split(/[.!?
-]/)[0] || pillar || 'our latest update').slice(0, 70);
+        const topic = (ta.value.trim().split(/[.!?\n]/)[0] || pillar || 'our latest update').slice(0, 70);
 
         const hooks = [
           `Stop scrolling if you want to level up your ${pillar.toLowerCase()} game 👇
@@ -2220,8 +2220,7 @@ ${ta.value || topic}`,
         const resEl = document.getElementById('aiHookResults');
         resEl.innerHTML = hooks.map((h, i) => `
           <button type="button" class="ai-hook-option" data-hook-idx="${i}">
-            <strong>Option ${i + 1}:</strong> ${esc(h.split('
-')[0])}
+            <strong>Option ${i + 1}:</strong> ${esc(h.split('\n')[0])}
           </button>
         `).join('');
 

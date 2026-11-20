@@ -1,5 +1,5 @@
 /* =========================================================
-   MURNOVA — GLASSMORPHIC SOCIAL MEDIA CALENDAR STYLES
+   LOOMWELLOPS — GLASSMORPHIC SOCIAL MEDIA CALENDAR STYLES
    ========================================================= */
 
 :root {
@@ -734,13 +734,15 @@ body {
 /* Calendar Split Workspace */
 .calendar-workspace {
   display: grid;
-  grid-template-columns: 1fr 290px;
+  grid-template-columns: minmax(0, 1fr) 280px;
   gap: 18px;
   align-items: start;
 }
 
 .cal-main-card {
   padding: 18px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .cal-toolbar {
@@ -812,7 +814,7 @@ body {
 /* Month Grid */
 .month-weekdays {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   text-align: center;
   font-size: 0.75rem;
   font-weight: 600;
@@ -823,12 +825,14 @@ body {
 
 .month-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   border-left: 1px solid var(--border-glass);
 }
 
 .day-cell {
-  min-height: 112px;
+  min-height: 118px;
+  min-width: 0;
+  overflow: hidden;
   border-right: 1px solid var(--border-glass);
   border-bottom: 1px solid var(--border-glass);
   padding: 7px;
@@ -894,6 +898,9 @@ body {
 
 /* Scheduled Event Pills (Matching Reference Video Green/Colored Bars) */
 .event-pill {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 5px 8px;
   border-radius: 8px;
   font-size: 0.73rem;
@@ -931,14 +938,17 @@ body {
 }
 
 .ev-title-text {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Week View */
 .week-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -1033,7 +1043,7 @@ body {
 
 .mini-cal-weekdays, .mini-cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   text-align: center;
   gap: 3px;
 }
@@ -1439,7 +1449,7 @@ body {
 .err { color: #ef4444; font-size: 0.82rem; min-height: 18px; }
 
 /* Login Overlay matching Murnova Glassmorphic Aesthetic */
-.murnova-login-screen {
+.loomwellops-login-screen {
   position: fixed;
   inset: 0;
   z-index: 500;
@@ -1448,7 +1458,7 @@ body {
   justify-content: center;
   padding: 20px;
 }
-.murnova-login-card {
+.loomwellops-login-card {
   width: 100%;
   max-width: 400px;
   padding: 32px;
@@ -1459,20 +1469,20 @@ body {
   border: 1px solid var(--border-glass);
   box-shadow: var(--shadow-shell);
 }
-.murnova-login-card h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 4px; }
-.murnova-login-card p.sub { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px; }
-.murnova-login-card label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-top: 12px; margin-bottom: 4px; }
-.murnova-login-card input { width: 100%; padding: 10px 13px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--surface-subtle); color: var(--text-primary); font-family: inherit; }
+.loomwellops-login-card h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 4px; }
+.loomwellops-login-card p.sub { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px; }
+.loomwellops-login-card label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-top: 12px; margin-bottom: 4px; }
+.loomwellops-login-card input { width: 100%; padding: 10px 13px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--surface-subtle); color: var(--text-primary); font-family: inherit; }
 
 /* Board View (Kanban Automation) inside Murnova Calendar Area */
-.murnova-board {
+.loomwellops-board {
   display: flex;
   gap: 12px;
   overflow-x: auto;
   padding-bottom: 8px;
   align-items: flex-start;
 }
-.murnova-bcol {
+.loomwellops-bcol {
   flex: 1 0 215px;
   min-width: 215px;
   background: var(--surface-subtle);
@@ -1481,11 +1491,11 @@ body {
   padding: 12px;
   min-height: 320px;
 }
-.murnova-bcol.drag-over {
+.loomwellops-bcol.drag-over {
   outline: 2px dashed #8b5cf6;
   outline-offset: -2px;
 }
-.murnova-bcol-head {
+.loomwellops-bcol-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1495,7 +1505,7 @@ body {
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border-glass);
 }
-.murnova-bcard {
+.loomwellops-bcard {
   padding: 10px;
   border-radius: 12px;
   background: var(--surface-card);
@@ -1504,7 +1514,7 @@ body {
   cursor: grab;
   transition: transform 0.15s ease;
 }
-.murnova-bcard:hover { transform: translateY(-1px); }
+.loomwellops-bcard:hover { transform: translateY(-1px); }
 
 /* Automation Toolbar Pill Bar */
 .auto-tools-bar {
@@ -1546,3 +1556,26 @@ body {
 .ccount { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 .ccount.near { color: #d97706; font-weight: 600; }
 .ccount.over { color: #dc2626; font-weight: 700; }
+
+/* ==========================================================================
+   LOOMWELLOPS V2 ENHANCEMENTS (IG GRID, BULK BAR, AI HOOKS, BEST TIMES)
+   ========================================================================== */
+.ev-select-cb { width: 13px; height: 13px; accent-color: #8b5cf6; cursor: pointer; flex-shrink: 0; opacity: 0.72; transition: opacity 0.15s ease; }
+.event-pill:hover .ev-select-cb, .ev-select-cb:checked { opacity: 1; }
+.event-pill.is-selected { outline: 2px solid #ffffff; box-shadow: 0 0 0 3px #8b5cf6; }
+.bulk-action-bar { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px); z-index: 300; background: var(--surface-card); backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid var(--border-strong); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35); border-radius: 999px; padding: 10px 18px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+.bulk-action-bar.visible { transform: translateX(-50%) translateY(0); }
+.bulk-count-pill { background: #8b5cf6; color: #fff; font-size: 0.78rem; font-weight: 700; padding: 4px 11px; border-radius: 999px; }
+.ig-preview-card .ig-grid-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.ig-grid-3x3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; border-radius: 12px; overflow: hidden; background: var(--surface-subtle); padding: 4px; }
+.ig-tile { aspect-ratio: 1 / 1; background: var(--surface-card); border-radius: 6px; position: relative; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; text-align: center; border: 1px solid var(--border-glass); transition: transform 0.16s ease; }
+.ig-tile:hover { transform: scale(1.03); z-index: 2; }
+.ig-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ig-tile-caption { font-size: 0.62rem; line-height: 1.25; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.ig-tile-badge { position: absolute; bottom: 3px; right: 3px; background: rgba(0, 0, 0, 0.68); color: #fff; font-size: 0.56rem; font-weight: 700; padding: 1px 4px; border-radius: 4px; }
+.best-time-strip { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; font-size: 0.76rem; color: var(--text-muted); }
+.best-time-pill { background: rgba(16, 185, 129, 0.14); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.28); padding: 3px 9px; border-radius: 999px; font-weight: 600; font-size: 0.72rem; }
+.ai-hook-box { margin-top: 10px; padding: 12px; border-radius: 14px; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25); }
+.ai-hook-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.ai-hook-option { text-align: left !important; border-radius: 10px !important; padding: 7px 10px !important; font-size: 0.78rem !important; background: var(--surface-card) !important; border: 1px solid var(--border-glass) !important; }
+.ai-hook-option:hover { border-color: #8b5cf6 !important; }
