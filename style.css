@@ -1346,6 +1346,7 @@ body {
    V1 BACKEND & AUTOMATION COMPONENT BRIDGE STYLES
    ========================================================================== */
 #dlg {
+  margin: auto;
   border: 1px solid var(--border-strong);
   border-radius: 22px;
   background: var(--surface-card);

@@ -1014,13 +1014,27 @@ function importForm(){
 }
 /* ---------- Tools: import results from a Meta Business Suite export ---------- */
 /*META-START*/
+async function readCsvFile(f){
+  const buf=new Uint8Array(await f.arrayBuffer());
+  let enc='utf-8';
+  if(buf[0]===0xFF&&buf[1]===0xFE)enc='utf-16le';
+  else if(buf[0]===0xFE&&buf[1]===0xFF)enc='utf-16be';
+  else if(buf.length>3&&buf[1]===0&&buf[3]===0)enc='utf-16le';
+  return new TextDecoder(enc).decode(buf);}
 function parseCsv(t){
-  t=String(t||'').replace(/^﻿/,'');
+  t=String(t||'').replace(/^\uFEFF/,'');
+  let delim=',';
+  const sep=t.match(/^\s*sep=(.)\s*[\r\n]/i);
+  if(sep){delim=sep[1];t=t.slice(sep[0].length);}
+  else{
+    const first=t.split(/\r\n|\n|\r/)[0]||'';let best=0;
+    [',',';','\t','|'].forEach(d=>{let n=0,q=false;for(const ch of first){if(ch==='"')q=!q;else if(!q&&ch===d)n++;}if(n>best){best=n;delim=d;}});
+  }
   const rows=[];let r=[],f='',q=false;
   for(let i=0;i<t.length;i++){const c=t[i];
     if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++;}else q=false;}else f+=c;}
     else if(c==='"')q=true;
-    else if(c===','){r.push(f);f='';}
+    else if(c===delim){r.push(f);f='';}
     else if(c==='\n'||c==='\r'){if(c==='\r'&&t[i+1]==='\n')i++;r.push(f);f='';if(r.some(x=>x!==''))rows.push(r);r=[];}
     else f+=c;}
   r.push(f);if(r.some(x=>x!==''))rows.push(r);
@@ -1028,17 +1042,25 @@ function parseCsv(t){
 function metaDate(s){
   s=String(s||'').trim();let m;
   if((m=s.match(/^(\d{4})-(\d{2})-(\d{2})/)))return m[1]+'-'+m[2]+'-'+m[3];
-  if((m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/))){let mo=+m[1],dd=+m[2];if(mo>12&&dd<=12){const x=mo;mo=dd;dd=x;}
+  if((m=s.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})/))){let mo=+m[1],dd=+m[2];if(mo>12&&dd<=12){const x=mo;mo=dd;dd=x;}
     return m[3]+'-'+String(mo).padStart(2,'0')+'-'+String(dd).padStart(2,'0');}
+  if(s){const x=new Date(s.replace(/\s+at\s+/i,' '));if(!isNaN(x)&&x.getFullYear()>2000)return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');}
   return null;}
 const mnorm=s=>String(s||'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,'');
 const mnum=v=>{if(v==null)return null;const t=String(v).replace(/,/g,'').trim();if(t==='')return null;const n=Number(t);return isFinite(n)?Math.round(n):null;};
 function metaRows(text){
-  const rows=parseCsv(text);if(rows.length<2)throw new Error('That file looks empty.');
-  const H=rows[0].map(h=>String(h).trim().toLowerCase());
+  const all=parseCsv(text);if(all.length<2)throw new Error('That file looks empty.');
+  const norm=h=>String(h==null?'':h).replace(/[\u00a0\u200b]/g,' ').replace(/^["'\s]+|["'\s]+$/g,'').replace(/\s+/g,' ').toLowerCase();
+  const TIME=['publish time','publish date','date published','published','post publish time','publish_time','time published','created time'];
+  const REACH=['reach','post reach','people reached','accounts reached','lifetime post total reach'];
+  let hi=0;
+  for(let i=0;i<Math.min(all.length,10);i++){const h=all[i].map(norm);if(h.some(x=>TIME.includes(x))&&h.some(x=>REACH.includes(x))){hi=i;break;}}
+  const rows=all.slice(hi);
+  const H=rows[0].map(norm);
   const col=(...names)=>{for(const n of names){const i=H.indexOf(n);if(i>=0)return i;}return -1;};
-  const c={page:col('page name','account name','username'),title:col('title'),desc:col('description'),time:col('publish time','publish date','date published'),link:col('permalink','post link'),reach:col('reach'),likes:col('reactions','likes'),com:col('comments'),sh:col('shares'),sv:col('saves'),lc:col('link clicks'),eng:col('reactions, comments and shares','engagements')};
-  if(c.time<0||c.reach<0)throw new Error('This does not look like a Meta Business Suite posts export (it needs "Publish time" and "Reach" columns).');
+  const c={page:col('page name','account name','account username','username','page'),title:col('title'),desc:col('description','caption','post message','message'),time:col(...TIME),link:col('permalink','post link','permalink url','url'),reach:col(...REACH),likes:col('reactions','likes'),com:col('comments'),sh:col('shares'),sv:col('saves'),lc:col('link clicks'),eng:col('reactions, comments and shares','engagements','total engagements')};
+  if(c.time<0&&H.includes('date')&&(H.includes('views')||H.includes('impressions')||H.includes('viewers')))throw new Error('This is a daily Page summary (one row per day), not a per-post export. This importer needs the post-level export from Meta Business Suite (Insights > Content), which has one row per post with its Publish time and Reach.');
+  if(c.time<0||c.reach<0)throw new Error('This does not look like a Meta Business Suite posts export (it needs a "Publish time" and a "Reach" column). Columns found: '+H.filter(Boolean).slice(0,14).join(', ')+(H.length>14?'...':''));
   const g=(r,i)=>i>=0?r[i]:null;
   const out=[];
   rows.slice(1).forEach(r=>{
@@ -1098,7 +1120,7 @@ function importResultsForm(){
     const f=ev.target.files[0];if(!f)return;
     $('#mo').textContent='Reading the file...';$('#mgo').style.display='none';
     try{
-      rows=metaRows(await f.text());
+      rows=metaRows(await readCsvFile(f));
       if(!rows.length){$('#mo').innerHTML='<span class="err">No posts with a publish date were found in that file.</span>';return;}
       pages=[...new Set(rows.map(r=>r.page))].filter(Boolean);
       let first='';
