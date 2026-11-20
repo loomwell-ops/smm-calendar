@@ -116,14 +116,15 @@
     <div class="app-body">
       <!-- Left Icon Sidebar -->
       <aside class="left-rail" aria-label="Quick Tools">
+        <button class="rail-btn" id="railSearch" title="Search posts (Ctrl+K)" aria-label="Search" onclick="document.getElementById('searchTrigger').click()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+        <button class="rail-btn" id="quickNewPostRail" title="Compose post" aria-label="Compose post">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
         <button class="rail-btn active" data-tab-jump="calendar" title="Publishing Calendar">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-        </button>
-        <button class="rail-btn" id="quickNewPostRail" title="Compose Post (Supabase)">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
           </svg>
         </button>
         <button class="rail-btn" data-tab-jump="analytics" title="Live Supabase Insights">
@@ -153,33 +154,35 @@
       <main class="workspace">
         <!-- ================= TAB 1: OVERVIEW ================= -->
         <section class="tab-view" id="view-overview">
-          <div class="overview-header">
-            <div>
-              <h1 class="hero-title" id="ovGreeting">Afternoon,<br>Workspace</h1>
+          <div class="ov-head">
+            <h1 class="hero-title" id="ovGreeting">Afternoon,<br>Workspace</h1>
+            <div class="stat-inline">
+              <div class="si"><span class="si-ic" data-ico="send"></span><div><b id="ovScheduledCount">0</b><small id="ovClientSub">Posts this month</small></div></div>
+              <div class="si"><span class="si-ic" data-ico="clock"></span><div><b id="ovPendingCount">0</b><small>Awaiting client approval</small></div></div>
+              <div class="si"><span class="si-ic" data-ico="eye"></span><div><b id="ovTotalReach">0</b><small>Total reach, tracked posts</small></div></div>
             </div>
-            <div class="kpi-strip">
-              <div class="kpi-card">
-                <div class="kpi-label">Posts this month <span class="trend up">Live</span></div>
-                <div class="kpi-val" id="ovScheduledCount">0</div>
-                <div class="kpi-sub" id="ovClientSub">synced with Supabase</div>
-              </div>
-              <div class="kpi-card">
-                <div class="kpi-label">Pending approval</div>
-                <div class="kpi-val" id="ovPendingCount">0</div>
-                <div class="kpi-sub">awaiting client review</div>
-              </div>
-              <div class="kpi-card">
-                <div class="kpi-label">Total reach <span class="trend up">Insights</span></div>
-                <div class="kpi-val" id="ovTotalReach">0</div>
-                <div class="kpi-sub">across tracked posts</div>
-              </div>
-              <button class="btn-primary btn-pill" id="ovNewPostBtn">
-                <span>+</span> New post
-              </button>
-            </div>
+            <button class="btn-primary btn-pill" id="ovNewPostBtn"><span>+</span> New post</button>
           </div>
 
           <div class="overview-grid">
+            <div class="glass-card upnext-card">
+              <div class="card-top-row">
+                <h3 style="flex:1">Up next</h3>
+                <span class="live-queue"><i></i> Live queue</span>
+                <button type="button" class="round-btn" data-tab-jump="calendar" aria-label="Open calendar" data-ico="arrow" data-size="15"></button>
+              </div>
+              <div id="ovUpNext"></div>
+            </div>
+            <div class="glass-card queue-card">
+              <div class="card-top-row">
+                <h3 style="flex:1">Needs you</h3>
+                <span class="count-dot" id="attentionCount">0</span>
+              </div>
+              <div class="attention-list" id="overviewAttentionList"></div>
+            </div>
+          </div>
+
+          <div class="overview-grid ov-lower">
             <div class="glass-card spotlight-card">
               <div class="card-top-row">
                 <span class="pill-tag">Weekly Pace &amp; Goals</span>
@@ -205,22 +208,13 @@
                 </div>
               </div>
             </div>
-
-            <div class="glass-card queue-card">
-              <div class="card-top-row">
-                <h3>Needs your attention</h3>
-                <span class="badge-soft" id="attentionCount">0 items</span>
-              </div>
-              <div class="attention-list" id="overviewAttentionList"></div>
-            </div>
-          </div>
-
           <div class="glass-card campaigns-strip">
             <div class="card-top-row">
               <h3>Content Pillars &amp; Weekly Goals</h3>
               <span class="muted-text">Click a pillar to filter calendar</span>
             </div>
             <div class="pillars-row" id="overviewPillars"></div>
+          </div>
           </div>
         </section>
 
@@ -386,13 +380,11 @@
 
         <!-- ================= TAB 5: ANALYTICS (LIVE V1 INSIGHTS) ================= -->
         <section class="tab-view" id="view-analytics">
-          <div class="overview-header">
-            <div>
-              <h1 class="hero-title">Insights &amp;<br>Results</h1>
-            </div>
-            <div class="kpi-strip" id="liveAnalyticsKpis"></div>
+          <div class="ov-head">
+            <h1 class="hero-title">Analytics</h1>
+            <div class="stat-inline" id="liveAnalyticsKpis"></div>
           </div>
-          <div class="analytics-grid" id="liveAnalyticsGrid"></div>
+          <div id="liveAnalyticsGrid"></div>
         </section>
 
         <!-- ================= TAB 6: IDEAS BANK & AUTOMATION ================= -->
@@ -1968,7 +1960,7 @@ window.adminView=function(){
     }
     // Keep pills aligned if the window is resized
     window.addEventListener('resize', () => {
-      document.querySelectorAll('.nav-pill-bg, .seg-pill-bg').forEach(p => {
+      document.querySelectorAll('.nav-pill-bg, .seg-pill-bg, .chip-pill-bg').forEach(p => {
         if (p.__target && p.__target.isConnected) slidePill(p, p.parentElement, p.__target, false);
       });
     });
@@ -2041,7 +2033,7 @@ window.adminView=function(){
       if (animate && typeof gsap !== 'undefined') {
         const v = document.getElementById(`view-${tabName}`);
         requestAnimationFrame(() => requestAnimationFrame(() => {
-          const kids = v ? v.querySelectorAll(':scope > *, .glass-card, .stat-card, .kpi-card') : [];
+          const kids = v ? v.querySelectorAll('.ov-head, .an-controls, .an-chips, .glass-card') : [];
           if (kids.length) gsap.fromTo(kids, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.05, clearProps: 'opacity,transform' });
         }));
       }
@@ -2619,46 +2611,166 @@ ${ta.value || topic}`,
     }
 
     // ================= OVERVIEW, APPROVALS, INBOX, INSIGHTS & IDEAS =================
+    // ======================================================================
+    //  Video-style layout helpers (icons, count-up, compact numbers)
+    // ======================================================================
+    const byId = id => document.getElementById(id);
+    const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const IC = {
+      users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+      eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+      cal: '<rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+      clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+      trend: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+      check: '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+      send: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+      download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+      upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+      arrow: '<line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>'
+    };
+    const ico = (k, s = 16) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k] || ''}</svg>`;
+    function hydrateIcons(root) {
+      (root || document).querySelectorAll('[data-ico]').forEach(el => { if (!el.firstChild) el.innerHTML = ico(el.dataset.ico, +el.dataset.size || 16); });
+    }
+    const compact = n => {
+      n = +n || 0; const a = Math.abs(n);
+      if (a >= 1e6) return (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+      if (a >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+      return String(Math.round(n * 10) / 10);
+    };
+    const bigFmt = v => (v >= 10000 ? compact(v) : Math.round(v).toLocaleString());
+    function countTo(el, to, fmt) {
+      if (!el) return;
+      fmt = fmt || (v => Math.round(v).toLocaleString());
+      if (el.__tw) el.__tw.kill();
+      if (REDUCED || typeof gsap === 'undefined') { el.textContent = fmt(to); return; }
+      const o = { v: 0 };
+      el.__tw = gsap.to(o, { v: to, duration: 0.9, ease: 'power2.out', onUpdate: () => { el.textContent = fmt(o.v); }, onComplete: () => { el.textContent = fmt(to); } });
+    }
+    const PLAT_COL = { 'Instagram': '#e1306c', 'Facebook': '#1877f2', 'LinkedIn': '#0a66c2', 'TikTok': '#0fa3ae', 'Google Business Profile': '#34a853' };
+    const platCol = p => PLAT_COL[p] || '#6b6f85';
+    const safeImg = (p, sz) => { let u = ''; try { u = thumbUrl(p.visual, sz) || ''; } catch (e) {} return /^https?:\/\//i.test(u) ? u : ''; };
+    const postWhen = p => {
+      if (!p.post_date) return null;
+      const d = new Date(p.post_date + 'T' + String(p.post_time || '09:00').slice(0, 5));
+      return isNaN(d) ? null : d;
+    };
+    const etaText = ms => {
+      if (ms <= 0) return 'Due now';
+      const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+      return d ? `${d} d ${h} h` : (h ? `${h} h ${mm} min` : `${mm} min`);
+    };
+
+    // ======================================================================
+    //  OVERVIEW  (greeting + inline stats, "Up next" hero card, "Needs you")
+    // ======================================================================
+    let upNextTimer = null;
     function renderMurnovaOverview() {
+      hydrateIcons(byId('view-overview'));
       const y = month.getFullYear(), m = month.getMonth();
       const mp = posts.filter(p => inMonth(p, y, m));
       const pending = mp.filter(p => p.approval === 'Pending' && p.status !== 'Posted');
       const approved = mp.filter(p => p.approval === 'Approved');
       const totalReach = mp.reduce((acc, p) => acc + (+p.reach || 0), 0);
       const cname = (clients.find(c => c.id === cid) || {}).name || 'Workspace';
+      const hr = new Date().getHours();
+      const part = hr < 12 ? 'Morning' : hr < 18 ? 'Afternoon' : 'Evening';
+      const mname = month.toLocaleDateString('en-US', { month: 'long' });
 
-      document.getElementById('ovGreeting').innerHTML = `Welcome,<br>${esc(cname)}`;
-      document.getElementById('ovScheduledCount').textContent = mp.length;
-      document.getElementById('ovPendingCount').textContent = pending.length;
-      document.getElementById('ovTotalReach').textContent = totalReach.toLocaleString();
-      document.getElementById('ovClientBadge').textContent = cname.toUpperCase();
+      byId('ovGreeting').innerHTML = `${part},<br>${esc(cname)}`;
+      countTo(byId('ovScheduledCount'), mp.length);
+      countTo(byId('ovPendingCount'), pending.length);
+      countTo(byId('ovTotalReach'), totalReach, bigFmt);
+      byId('ovClientSub').textContent = `Posts in ${mname}`;
+      byId('ovClientBadge').textContent = cname.toUpperCase();
 
       const pct = mp.length ? Math.round((approved.length / mp.length) * 100) : 0;
-      document.getElementById('ovApprovalRate').textContent = `${pct}% Approved`;
-      document.getElementById('ovApprovalBar').style.width = `${pct}%`;
-      document.getElementById('ovApprovalDesc').textContent = `${approved.length} of ${mp.length} posts in ${month.toLocaleDateString('en-US', { month: 'long' })} approved by client.`;
+      byId('ovApprovalRate').textContent = `${pct}% Approved`;
+      byId('ovApprovalBar').style.width = `${pct}%`;
+      byId('ovApprovalDesc').textContent = `${approved.length} of ${mp.length} posts in ${mname} approved by client.`;
 
-      const issues = posts.filter(p => checks(p).length > 0).slice(0, 4);
-      document.getElementById('attentionCount').textContent = `${issues.length} items`;
-      document.getElementById('overviewAttentionList').innerHTML = issues.map(p => `
-        <div class="attention-item">
-          <div class="attention-meta">
-            <span class="attention-title">${esc(p.platform)} · ${esc(p.post_date || 'No date')}</span>
-            <span class="attention-sub">${esc(checks(p).join(', '))}</span>
-          </div>
-          <button class="btn-secondary btn-sm" data-open-post="${esc(p.id)}">Review</button>
-        </div>
-      `).join('') || `<p class="muted-text">All posts are in good shape! 🎉</p>`;
+      // ---- Up next ----
+      const now = Date.now();
+      const upcoming = posts.filter(p => p.status !== 'Posted')
+        .map(p => ({ p, d: postWhen(p) })).filter(x => x.d && x.d.getTime() >= now - 60000)
+        .sort((a, b) => a.d - b.d);
+      const nxt = upcoming[0];
+      const host = byId('ovUpNext');
+      clearInterval(upNextTimer);
+      if (!nxt) {
+        host.innerHTML = `<div class="an-empty">Nothing scheduled ahead. Hit <b>New post</b> to plan the next one.</div>`;
+      } else {
+        const p = nxt.p, img = safeImg(p, 'w600');
+        let label = 'Approved', cls = 'green';
+        if (p.approval === 'Changes requested') { label = 'Changes requested'; cls = 'rose'; }
+        else if (p.approval === 'Pending') { label = 'Awaiting approval'; cls = 'amber'; }
+        else if (p.status === 'Scheduled') { label = 'Scheduled'; cls = 'green'; }
+        const when = nxt.d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) + ' · ' + nxt.d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        host.innerHTML = `
+          <button type="button" class="up-card" data-open-post="${esc(p.id)}">
+            <div class="up-media">${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<span class="up-media-badge">${esc(getPlatBadge(p.platform))}</span></div>
+            <div class="up-body">
+              <div class="up-top">
+                <span class="up-who"><span class="plat-badge" style="background:${platCol(p.platform)}">${esc(getPlatBadge(p.platform))}</span>${esc(p.account ? p.platform + ' · ' + p.account : p.platform)}</span>
+                <span class="status-chip ${cls}">${label}</span>
+              </div>
+              <div class="up-eta"><small>goes out in</small><strong id="upEta">${etaText(nxt.d - now)}</strong></div>
+              <div class="up-when">${ico('clock', 13)} ${esc(when)}</div>
+              <p class="up-cap">${esc((p.caption || 'No caption yet.').slice(0, 170))}</p>
+            </div>
+          </button>`;
+        upNextTimer = setInterval(() => {
+          const el = byId('upEta');
+          if (!el) return clearInterval(upNextTimer);
+          el.textContent = etaText(nxt.d.getTime() - Date.now());
+        }, 30000);
+      }
 
-      document.querySelectorAll('[data-open-post]').forEach(b => {
-        b.onclick = () => {
-          const post = posts.find(x => x.id === b.dataset.openPost);
-          if (post) openUnifiedPostEditor(post);
+      // ---- Needs you ----
+      const pendAll = posts.filter(p => p.approval === 'Pending' && p.status !== 'Posted');
+      const seen = new Set(pendAll.map(p => p.id));
+      const need = [
+        ...pendAll.map(p => ({ p, why: 'Awaiting client approval' })),
+        ...posts.filter(p => !seen.has(p.id) && checks(p).length > 0).map(p => ({ p, why: checks(p).join(', ') }))
+      ];
+      byId('attentionCount').textContent = need.length;
+      byId('attentionCount').classList.toggle('zero', !need.length);
+      const list = byId('overviewAttentionList');
+      list.innerHTML = need.slice(0, 4).map(({ p, why }) => {
+        const img = safeImg(p, 'w120');
+        const canApprove = p.approval === 'Pending' && p.status !== 'Posted';
+        return `
+          <div class="need-item">
+            <div class="need-thumb" style="background:${platCol(p.platform)}"><span>${esc(getPlatBadge(p.platform))}</span>${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</div>
+            <div class="need-text">
+              <div class="need-title">${esc((p.caption || 'No caption yet').replace(/\s+/g, ' ').slice(0, 90))}</div>
+              <div class="need-sub">${esc(why)} · ${esc(p.platform)} · ${esc(p.post_date || 'No date')}</div>
+            </div>
+            <div class="need-actions">
+              ${canApprove ? `<button type="button" class="btn-approve" data-approve="${esc(p.id)}">${ico('check', 13)} Approve</button>` : ''}
+              <button type="button" class="btn-secondary btn-sm" data-open-post="${esc(p.id)}">Review</button>
+            </div>
+          </div>`;
+      }).join('') + (need.length > 4 ? `<button type="button" class="need-more" onclick="switchMurnovaTab('approvals', true)">View all ${need.length} →</button>` : '')
+        || `<p class="muted-text" style="padding:10px 4px;">All posts are in good shape! 🎉</p>`;
+
+      byId('view-overview').querySelectorAll('[data-open-post]').forEach(b => {
+        b.onclick = () => { const post = posts.find(x => x.id === b.dataset.openPost); if (post) openUnifiedPostEditor(post); };
+      });
+      list.querySelectorAll('[data-approve]').forEach(b => {
+        b.onclick = async () => {
+          b.disabled = true;
+          const r = await sb.from('posts').update({ approval: 'Approved', status: 'Approved' }).eq('id', b.dataset.approve);
+          if (r.error) { b.disabled = false; return alert('Error: ' + r.error.message); }
+          await loadPosts();
+          renderMurnovaOverview();
+          updateNavBadges();
+          toast('Post approved!');
         };
       });
 
-      const pillarsEl = document.getElementById('overviewPillars');
-      pillarsEl.innerHTML = Object.entries(PILLARS).slice(0, 4).map(([pil, col]) => {
+      byId('overviewPillars').innerHTML = Object.entries(PILLARS).slice(0, 4).map(([pil, col]) => {
         const count = mp.filter(p => p.pillar === pil).length;
         return `
           <div class="pillar-box" onclick="switchMurnovaTab('calendar', true)">
@@ -2667,8 +2779,7 @@ ${ta.value || topic}`,
             </div>
             <div style="font-weight:600;font-size:0.92rem;margin-bottom:6px;">${esc(pil)}</div>
             <span class="badge-soft">${count} posts this month</span>
-          </div>
-        `;
+          </div>`;
       }).join('');
     }
 
@@ -2741,68 +2852,254 @@ ${ta.value || topic}`,
       });
     }
 
+    // ======================================================================
+    //  ANALYTICS  (range switch, network chips, two animated SVG charts)
+    // ======================================================================
+    let anRange = 30, anPlat = 'all', anMetric = 'engagements', chartSeq = 0;
+    const DAY = 864e5;
+    const midnight = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+    const fmtDay = d => d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+    const sumA = a => a.reduce((x, y) => x + y, 0);
+    const cumA = a => { let s = 0; return a.map(v => (s += v)); };
+    const offOf = p => { const d = new Date(p.post_date + 'T00:00'); return isNaN(d) ? NaN : Math.round((d - midnight(new Date())) / DAY); };
+    const inRange = (p, days) => { const o = offOf(p); return o >= -(days - 1) && o <= 0; };
+    const anPosts = () => posts.filter(p => p.post_date && (anPlat === 'all' || p.platform === anPlat));
+
+    function anBuild(list, key, days) {
+      const b = days > 45 ? 3 : 1, n = Math.ceil(days / b), end = midnight(new Date());
+      const cur = new Array(n).fill(0), prev = new Array(n).fill(0);
+      list.forEach(p => {
+        if (key !== 'posts' && p.reach == null) return;
+        const o = offOf(p); if (isNaN(o)) return;
+        const v = key === 'posts' ? 1 : (+p[key] || 0);
+        if (o >= -(days - 1) && o <= 0) cur[Math.floor((o + days - 1) / b)] += v;
+        else if (o >= -(2 * days - 1) && o <= -days) prev[Math.floor((o + 2 * days - 1) / b)] += v;
+      });
+      const labels = cur.map((_, i) => fmtDay(new Date(end.getTime() + (-(days - 1) + i * b) * DAY)));
+      return { cur, prev, labels };
+    }
+    const trendHtml = (c, p) => {
+      if (!p) return c > 0 ? '<span class="trend up">New</span>' : '';
+      const pc = ((c - p) / p) * 100;
+      return `<span class="trend ${pc >= 0 ? 'up' : 'down'}">${pc >= 0 ? '+' : ''}${pc.toFixed(1)}%</span>`;
+    };
+
+    // ---- the chart: smooth line + gradient area, left-to-right draw, hover tooltip ----
+    function lineChart(host, o) {
+      const id = 'ch' + (++chartSeq);
+      const Wd = 600, Ht = 230, L = 44, R = 14, T = 16, B = 28;
+      const n = o.cur.length, iw = Wd - L - R, ih = Ht - T - B;
+      const rawMax = Math.max(1, ...o.cur, ...o.prev);
+      const mag = Math.pow(10, Math.floor(Math.log10(rawMax)));
+      const step = [1, 2, 2.5, 5, 10].map(s => s * mag).find(s => s * 4 >= rawMax);
+      const max = step * 4;
+      const X = i => L + (n === 1 ? iw / 2 : (i * iw) / (n - 1));
+      const Y = v => T + ih - (v / max) * ih;
+      const f = v => v.toFixed(1);
+      const path = arr => arr.map((v, i) => {
+        if (!i) return `M${f(X(0))},${f(Y(v))}`;
+        const x0 = X(i - 1), y0 = Y(arr[i - 1]), x1 = X(i), y1 = Y(v), mx = (x0 + x1) / 2;
+        return `C${f(mx)},${f(y0)} ${f(mx)},${f(y1)} ${f(x1)},${f(y1)}`;
+      }).join('');
+      const line = path(o.cur);
+      const area = `${line}L${f(X(n - 1))},${f(Y(0))}L${f(X(0))},${f(Y(0))}Z`;
+      let grid = '';
+      for (let k = 0; k <= 4; k++) {
+        const v = step * k, y = Y(v);
+        grid += `<line x1="${L}" x2="${Wd - R}" y1="${f(y)}" y2="${f(y)}" stroke="currentColor" stroke-opacity="${k ? 0.13 : 0.28}" ${k ? 'stroke-dasharray="3 5"' : ''}/>` +
+                `<text x="${L - 8}" y="${f(y + 3.5)}" text-anchor="end" font-size="10" fill="currentColor" opacity=".75">${compact(v)}</text>`;
+      }
+      let xl = '';
+      for (let k = 0; k <= 4; k++) {
+        const i = Math.round((k * (n - 1)) / 4);
+        xl += `<text x="${f(X(i))}" y="${Ht - 8}" text-anchor="${k === 0 ? 'start' : k === 4 ? 'end' : 'middle'}" font-size="10" fill="currentColor" opacity=".75">${esc(o.labels[i])}</text>`;
+      }
+      host.innerHTML = `
+        <svg class="chart-svg" viewBox="0 0 ${Wd} ${Ht}" role="img" aria-label="${esc(o.aria)}">
+          <defs>
+            <linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${o.color}" stop-opacity=".30"/><stop offset="1" stop-color="${o.color}" stop-opacity="0"/></linearGradient>
+            <clipPath id="${id}c"><rect x="0" y="-10" width="${Wd}" height="${Ht + 20}"/></clipPath>
+          </defs>
+          ${grid}${xl}
+          <path class="ch-prev" d="${path(o.prev)}" fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="1.6" stroke-dasharray="5 5"/>
+          <g clip-path="url(#${id}c)">
+            <path d="${area}" fill="url(#${id}g)"/>
+            <path class="ch-line" d="${line}" fill="none" stroke="${o.color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle class="ch-end" cx="${f(X(n - 1))}" cy="${f(Y(o.cur[n - 1]))}" r="4.5" fill="${o.color}" stroke="var(--surface-card)" stroke-width="2"/>
+          </g>
+          <g class="ch-hover" opacity="0" pointer-events="none">
+            <line y1="${T}" y2="${Ht - B}" stroke="currentColor" stroke-opacity=".35"/>
+            <circle r="4.5" fill="${o.color}" stroke="var(--surface-card)" stroke-width="2"/>
+            <circle r="3.5" fill="var(--surface-card)" stroke="currentColor" stroke-opacity=".6" stroke-width="1.5"/>
+          </g>
+          <rect class="ch-hit" x="${L}" y="${T}" width="${iw}" height="${ih}" fill="transparent"/>
+        </svg>
+        <div class="chart-tip"></div>`;
+      const svg = host.querySelector('svg'), hit = svg.querySelector('.ch-hit'), hv = svg.querySelector('.ch-hover'), tip = host.querySelector('.chart-tip');
+      const move = e => {
+        const r = svg.getBoundingClientRect();
+        const vx = ((e.clientX - r.left) / r.width) * Wd;
+        const i = Math.max(0, Math.min(n - 1, Math.round(((vx - L) / iw) * (n - 1))));
+        const x = X(i), cs = hv.querySelectorAll('circle');
+        hv.setAttribute('opacity', 1);
+        const ln = hv.querySelector('line'); ln.setAttribute('x1', x); ln.setAttribute('x2', x);
+        cs[0].setAttribute('cx', x); cs[0].setAttribute('cy', Y(o.cur[i]));
+        cs[1].setAttribute('cx', x); cs[1].setAttribute('cy', Y(o.prev[i]));
+        tip.innerHTML = `<b>${esc(o.labels[i])}</b>
+          <div><i class="lg-dot" style="background:${o.color}"></i>This period <strong>${o.fmt(o.cur[i])}</strong></div>
+          <div><i class="lg-dash"></i>Previous <strong>${o.fmt(o.prev[i])}</strong></div>`;
+        const px = (x / Wd) * r.width;
+        tip.style.left = Math.max(75, Math.min(host.clientWidth - 75, px)) + 'px';
+        tip.style.top = (Y(o.cur[i]) / Ht) * r.height + 'px';
+        tip.style.opacity = 1;
+      };
+      hit.addEventListener('pointermove', move);
+      hit.addEventListener('pointerdown', move);
+      hit.addEventListener('pointerleave', () => { hv.setAttribute('opacity', 0); tip.style.opacity = 0; });
+      if (o.animate && typeof gsap !== 'undefined' && !REDUCED) {
+        gsap.fromTo(svg.querySelector(`#${id}c rect`), { attr: { width: 0 } }, { attr: { width: Wd }, duration: 1.15, ease: 'power2.inOut' });
+        gsap.from(svg.querySelector('.ch-prev'), { opacity: 0, duration: 0.9, delay: 0.35 });
+        gsap.from(svg.querySelector('.ch-end'), { scale: 0, svgOrigin: `${X(n - 1)} ${Y(o.cur[n - 1])}`, duration: 0.45, delay: 1.0, ease: 'back.out(2.2)' });
+      }
+    }
+
+    function chartBlock(host, c) {
+      const empty = !c.cur.some(v => v) && !c.prev.some(v => v);
+      if (empty) {
+        host.innerHTML = `<div class="an-empty">No results recorded in the last ${anRange} days${anPlat !== 'all' ? ' for ' + esc(anPlat) : ''}.<br>Import your Meta CSV, or try a wider range.<br><button type="button" class="btn-secondary btn-sm" style="margin-top:12px" onclick="importResultsForm()">+ Import Meta CSV</button></div>`;
+        return;
+      }
+      host.innerHTML = `
+        <div class="chart-big"><span class="cb-num">0</span>${trendHtml(c.total, c.prevTotal)}<small>${esc(c.sub)}</small></div>
+        <div class="chart-legend"><span><i class="lg-dot" style="background:${c.color}"></i>${esc(c.legend)}</span><span><i class="lg-dash"></i>Previous period</span></div>
+        <div class="chart-wrap"></div>`;
+      countTo(host.querySelector('.cb-num'), c.total, bigFmt);
+      lineChart(host.querySelector('.chart-wrap'), { cur: c.cur, prev: c.prev, labels: c.labels, color: c.color, fmt: c.fmt || bigFmt, aria: c.aria, animate: c.animate });
+    }
+
+    function anUpdate(animate) {
+      const list = anPosts(), days = anRange;
+      const reachS = anBuild(list, 'reach', days), engS = anBuild(list, 'engagements', days);
+      const reach = sumA(reachS.cur), reachPrev = sumA(reachS.prev), eng = sumA(engS.cur);
+      const rate = reach ? (eng / reach) * 100 : 0;
+      const tracked = list.filter(p => p.reach != null && inRange(p, days));
+
+      countTo(byId('anKReach'), reach, bigFmt);
+      countTo(byId('anKEng'), eng, bigFmt);
+      countTo(byId('anKRate'), rate, v => v.toFixed(1) + '%');
+      countTo(byId('anKPosts'), tracked.length);
+      byId('anKTrend').innerHTML = trendHtml(reach, reachPrev);
+      byId('anScope').textContent = `${tracked.length} posts · last ${days} days`;
+
+      chartBlock(byId('anChartABody'), {
+        cur: cumA(reachS.cur), prev: cumA(reachS.prev), labels: reachS.labels, total: reach, prevTotal: reachPrev,
+        color: '#10b981', sub: `reach, last ${days} days`, legend: 'Reach, this period', aria: 'Cumulative reach, this period versus previous', animate
+      });
+
+      const MK = { engagements: ['Engagements', engS], reach: ['Reach', reachS], posts: ['Posts', anBuild(list, 'posts', days)] };
+      const [mLabel, S] = MK[anMetric];
+      chartBlock(byId('anChartBBody'), {
+        cur: S.cur, prev: S.prev, labels: S.labels, total: sumA(S.cur), prevTotal: sumA(S.prev),
+        color: '#8b5cf6', sub: `${mLabel.toLowerCase()}, last ${days} days`, legend: `${mLabel}, this period`, aria: `${mLabel} per ${days > 45 ? '3 days' : 'day'}`, animate
+      });
+
+      const top = tracked.slice().sort((a, b) => (+b.reach || 0) - (+a.reach || 0)).slice(0, 5);
+      byId('anTopBody').innerHTML = top.map(p => `
+        <button type="button" class="inbox-row top-row" data-open-post="${esc(p.id)}">
+          <div>
+            <div style="font-weight:600;font-size:0.85rem;">${esc(p.platform)} · ${esc(p.post_date || '')}</div>
+            <div class="muted-text">${esc((p.caption || '').slice(0, 65))}</div>
+          </div>
+          <span class="pill-tag">${(+p.reach || 0).toLocaleString()} reach</span>
+        </button>`).join('') || `<p class="muted-text">No post results in this range. Click "Import Meta CSV" to load your Meta Business Suite insights, or pick a wider range.</p>`;
+      byId('anTopBody').querySelectorAll('[data-open-post]').forEach(b => {
+        b.onclick = () => { const post = posts.find(x => x.id === b.dataset.openPost); if (post) openUnifiedPostEditor(post); };
+      });
+    }
+
     function renderMurnovaAnalytics() {
-      const rs = posts.filter(p => p.reach != null);
-      const sum = k => rs.reduce((a, p) => a + (+p[k] || 0), 0);
-      const reach = sum('reach');
-      const eng = sum('engagements');
-      const rate = reach ? ((eng / reach) * 100).toFixed(2) : '0.00';
+      const plats = {};
+      posts.forEach(p => { if (p.reach != null) plats[p.platform] = (plats[p.platform] || 0) + 1; });
+      const platList = Object.entries(plats).sort((a, b) => b[1] - a[1]);
+      const totalTracked = sumA(platList.map(x => x[1]));
+      if (anPlat !== 'all' && !plats[anPlat]) anPlat = 'all';
+      const kpi = (ic, id, label, extra) => `<div class="si"><span class="si-ic">${ico(ic)}</span><div><b><span id="${id}">0</span>${extra || ''}</b><small>${label}</small></div></div>`;
 
-      document.getElementById('liveAnalyticsKpis').innerHTML = `
-        <div class="kpi-card">
-          <div class="kpi-label">Total reach <span class="trend up">${rs.length} posts</span></div>
-          <div class="kpi-val">${reach.toLocaleString()}</div>
-          <div class="kpi-sub">from Meta CSV &amp; manual logs</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Engagements</div>
-          <div class="kpi-val">${eng.toLocaleString()}</div>
-          <div class="kpi-sub">likes, comments &amp; saves</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Engagement rate</div>
-          <div class="kpi-val">${rate}%</div>
-          <div class="kpi-sub">engagements / reach</div>
-        </div>
-      `;
+      byId('liveAnalyticsKpis').innerHTML =
+        kpi('users', 'anKReach', 'Reach in range', '<span id="anKTrend"></span>') +
+        kpi('heart', 'anKEng', 'Engagements, likes, comments &amp; saves') +
+        kpi('trend', 'anKRate', 'Engagement rate') +
+        kpi('eye', 'anKPosts', 'Posts with results');
 
-      const top = rs.slice().sort((a, b) => (+b.reach || 0) - (+a.reach || 0)).slice(0, 5);
-      document.getElementById('liveAnalyticsGrid').innerHTML = `
-        <div class="glass-card chart-card">
-          <div class="card-top-row">
-            <div>
-              <h3>Top Performing Posts</h3>
-              <div class="big-stat">${reach.toLocaleString()} <span class="trend up">Reach</span></div>
-            </div>
-            <button class="btn-secondary btn-sm" onclick="importResultsForm()">+ Import Meta CSV</button>
-          </div>
-          ${top.map(p => `
-            <div class="inbox-row">
-              <div>
-                <div style="font-weight:600;font-size:0.85rem;">${esc(p.platform)} · ${esc(p.post_date || '')}</div>
-                <div class="muted-text">${esc((p.caption || '').slice(0, 65))}</div>
-              </div>
-              <span class="pill-tag">${(+p.reach || 0).toLocaleString()} reach</span>
-            </div>
-          `).join('') || `<p class="muted-text">No post metrics recorded yet. Click "Import Meta CSV" to load your Meta Business Suite insights.</p>`}
-        </div>
+      const rng = [7, 30, 90].map(d => `<button type="button" class="seg-btn${d === anRange ? ' active' : ''}" data-r="${d}">${d}D</button>`).join('');
+      const mets = [['engagements', 'Engagements'], ['reach', 'Reach'], ['posts', 'Posts']].map(([k, l]) => `<button type="button" class="seg-btn${k === anMetric ? ' active' : ''}" data-m="${k}">${l}</button>`).join('');
+      const chips = `<button type="button" class="an-chip${anPlat === 'all' ? ' active' : ''}" data-p="all">All networks <em>${totalTracked}</em></button>` +
+        platList.map(([pl, c]) => `<button type="button" class="an-chip${anPlat === pl ? ' active' : ''}" data-p="${esc(pl)}"><i class="lg-dot" style="background:${platCol(pl)}"></i>${esc(pl)} <em>${c}</em></button>`).join('');
 
-        <div class="glass-card chart-card">
-          <div class="card-top-row">
-            <div>
-              <h3>Weekly Goal Pace</h3>
-              <div class="big-stat">${ACCOUNTS.length || PLATFORMS.length} Channels</div>
-            </div>
-            <button class="btn-secondary btn-sm" onclick="settingsForm()">Edit Goals</button>
-          </div>
-          <div class="pace" style="grid-template-columns:1fr 1fr;">
-            ${Object.entries(GOALS).map(([pl, g]) => {
-              const cnt = posts.filter(p => p.platform === pl && inMonth(p, month.getFullYear(), month.getMonth())).length;
-              return `<div class="stat"><b>${cnt} / ${g * 4}</b>${esc(pl)} (monthly est.)</div>`;
-            }).join('')}
-          </div>
+      byId('liveAnalyticsGrid').innerHTML = `
+        <div class="an-controls">
+          <span class="muted-text" id="anScope" style="margin-right:auto;"></span>
+          <div class="segmented-control" id="anRange"><div class="seg-pill-bg"></div>${rng}</div>
+          <button type="button" class="btn-primary btn-pill" id="anExport">${ico('download', 14)} Export CSV</button>
+          <button type="button" class="btn-secondary btn-pill" onclick="importResultsForm()">${ico('upload', 14)} Import Meta CSV</button>
         </div>
-      `;
+        <div class="an-chips" id="anChips"><div class="chip-pill-bg"></div>${chips}</div>
+        <div class="analytics-grid">
+          <div class="glass-card chart-card">
+            <div class="card-top-row"><h3 style="flex:1">Reach growth</h3></div>
+            <div id="anChartABody"></div>
+          </div>
+          <div class="glass-card chart-card">
+            <div class="card-top-row"><h3 style="flex:1">Engagement &amp; activity</h3></div>
+            <div class="segmented-control" id="anMetric" style="margin-top:10px"><div class="seg-pill-bg"></div>${mets}</div>
+            <div id="anChartBBody" style="margin-top:6px"></div>
+          </div>
+          <div class="glass-card chart-card">
+            <div class="card-top-row"><h3 style="flex:1">Top performing posts</h3></div>
+            <div id="anTopBody" style="margin-top:8px"></div>
+          </div>
+          <div class="glass-card chart-card">
+            <div class="card-top-row">
+              <div><h3>Weekly goal pace</h3><div class="big-stat">${ACCOUNTS.length || PLATFORMS.length} Channels</div></div>
+              <button class="btn-secondary btn-sm" onclick="settingsForm()">Edit Goals</button>
+            </div>
+            <div class="pace" style="grid-template-columns:1fr 1fr;">
+              ${Object.entries(GOALS).map(([pl, g]) => {
+                const cnt = posts.filter(p => p.platform === pl && inMonth(p, month.getFullYear(), month.getMonth())).length;
+                return `<div class="stat"><b>${cnt} / ${g * 4}</b>${esc(pl)} (monthly est.)</div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>`;
+
+      // sliding stretchy pills (no animation on first paint)
+      const wire = (box, sel, onPick) => {
+        const pill = box.querySelector('.seg-pill-bg, .chip-pill-bg'), act = box.querySelector(sel + '.active');
+        if (act) slidePill(pill, box, act, false);
+        box.querySelectorAll(sel).forEach(b => b.onclick = () => {
+          if (b.classList.contains('active')) return;
+          box.querySelectorAll(sel).forEach(x => x.classList.toggle('active', x === b));
+          slidePill(pill, box, b, true);
+          onPick(b);
+        });
+      };
+      wire(byId('anRange'), '.seg-btn', b => { anRange = +b.dataset.r; anUpdate(true); });
+      wire(byId('anMetric'), '.seg-btn', b => { anMetric = b.dataset.m; anUpdate(true); });
+      wire(byId('anChips'), '.an-chip', b => { anPlat = b.dataset.p; anUpdate(true); });
+
+      byId('anExport').onclick = () => {
+        const rows = anPosts().filter(p => p.reach != null && inRange(p, anRange)).sort((a, b) => String(a.post_date).localeCompare(String(b.post_date)));
+        const q = v => { let s = String(v ?? '').replace(/\r?\n/g, ' '); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+        const csv = [['Date', 'Platform', 'Pillar', 'Format', 'Reach', 'Engagements', 'Caption'].join(',')]
+          .concat(rows.map(p => [p.post_date, p.platform, p.pillar, p.format, p.reach, p.engagements, p.caption].map(q).join(','))).join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+        a.download = `loomwellops-analytics-${anRange}d.csv`;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+        toast(rows.length ? `Exported ${rows.length} posts` : 'No results to export in this range');
+      };
+      anUpdate(true);
     }
 
     async function renderMurnovaIdeas() {
