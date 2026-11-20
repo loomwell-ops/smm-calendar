@@ -1,1 +1,16 @@
-{"name":"Content Calendar","short_name":"Calendar","start_url":"./","display":"standalone","background_color":"#f6f5fa","theme_color":"#4b3fd6","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
+{
+  "name": "LoomWellOps — Social Media Calendar",
+  "short_name": "LoomWellOps",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b0b12",
+  "theme_color": "#8b5cf6",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

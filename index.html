@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Murnova — Social Media Management & Publishing Calendar</title>
+  <title>LoomWellOps — Social Media Management & Publishing Calendar</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg">
   <link rel="apple-touch-icon" href="icon-180.png">
@@ -26,16 +26,16 @@
   <dialog id="dlg"></dialog>
 
   <!-- Login Overlay (Shown only when logged out of Supabase) -->
-  <div class="murnova-login-screen" id="murnovaLoginScreen" style="display:none;">
-    <form class="murnova-login-card" id="murnovaLoginForm">
+  <div class="loomwellops-login-screen" id="loomwellopsLoginScreen" style="display:none;">
+    <form class="loomwellops-login-card" id="loomwellopsLoginForm">
       <div class="brand" style="margin-bottom:16px;">
         <div class="brand-logo">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <rect x="2" y="2" width="20" height="20" rx="6" fill="currentColor" fill-opacity="0.14"/>
-            <path d="M7 15V9L10.5 13L14 9V15M17 9V15" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6.5 8.5V15.5H10.5M13 8.5L14.5 15.5L16.2 10.5L18 15.5L19.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <span class="brand-name">murnova</span>
+        <span class="brand-name">LoomWellOps</span>
       </div>
       <h1>Welcome back</h1>
       <p class="sub">Sign in to access your Social Media Publishing Calendar.</p>
@@ -52,17 +52,17 @@
   </div>
 
   <!-- Main App Shell (EXACT FIRST DESIGN) -->
-  <div class="app-shell" id="murnovaAppShell">
+  <div class="app-shell" id="loomwellopsAppShell">
     <!-- Top Navigation Bar -->
     <header class="topbar">
       <div class="brand">
         <div class="brand-logo">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <rect x="2" y="2" width="20" height="20" rx="6" fill="currentColor" fill-opacity="0.14"/>
-            <path d="M7 15V9L10.5 13L14 9V15M17 9V15" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6.5 8.5V15.5H10.5M13 8.5L14.5 15.5L16.2 10.5L18 15.5L19.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <span class="brand-name" id="mBrandTitle">murnova</span>
+        <span class="brand-name" id="mBrandTitle">LoomWellOps</span>
         <!-- Client Switcher (Admin Only) -->
         <select id="mClientSelect" class="client-switcher-select" aria-label="Select Client" style="display:none;margin-left:8px;"></select>
       </div>
@@ -80,6 +80,11 @@
 
       <!-- Right Controls -->
       <div class="topbar-actions">
+        <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="icon-btn" title="Open Instagram" aria-label="Open Instagram" style="text-decoration:none;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+          </svg>
+        </a>
         <button class="icon-btn" id="searchTrigger" title="Search posts (Ctrl+K)" aria-label="Search">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
@@ -285,6 +290,7 @@
             <button type="button" class="auto-chip" id="autoExportIcsBtn">📅 Export .ICS</button>
             <button type="button" class="auto-chip" id="autoExportCsvBtn">⇩ Export CSV</button>
             <button type="button" class="auto-chip" id="autoAllClientsBtn">☷ All clients summary</button>
+            <button type="button" class="auto-chip" id="autoShareClientLinkBtn">🔗 Client Approval Link</button>
           </div>
 
           <!-- Calendar Main Layout (Left Schedule + Right Mini Calendar & Unscheduled/Draft Queue) -->
@@ -304,13 +310,27 @@
                   <span class="legend-item"><i class="status-dot draft"></i>Draft</span>
                 </div>
               </div>
+              <div class="best-time-strip" id="optimalTimeStrip">
+                <span>⚡ Optimal posting windows:</span>
+                <span class="best-time-pill">IG · Tue/Thu 10:00 AM</span>
+                <span class="best-time-pill">LinkedIn · Wed 9:00 AM</span>
+                <span class="best-time-pill">TikTok · Fri 6:00 PM</span>
+              </div>
 
               <!-- Dynamic View Container (Month / Week / Board / Timeline) -->
               <div id="calendarRenderArea" class="calendar-render-area"></div>
             </div>
 
-            <!-- Right Inspector / Mini Month & Drafts/Evergreen Drawer -->
+            <!-- Right Inspector / Mini Month, IG Grid Preview & Drafts Drawer -->
             <aside class="cal-side-panel">
+              <!-- Visual Instagram 3x3 Grid Preview -->
+              <div class="glass-card ig-preview-card">
+                <div class="ig-grid-header">
+                  <span class="mini-cal-title">📸 Instagram Grid Preview</span>
+                  <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="text-link">Open IG ↗</a>
+                </div>
+                <div class="ig-grid-3x3" id="igVisualGrid3x3"></div>
+              </div>
               <!-- Mini Calendar -->
               <div class="glass-card mini-cal-card">
                 <div class="mini-cal-head">
@@ -390,6 +410,24 @@
         </section>
       </main>
     </div>
+  </div>
+
+
+  <!-- Floating Bulk Multi-Select Action Bar -->
+  <div class="bulk-action-bar" id="bulkActionBar" aria-hidden="true">
+    <span class="bulk-count-pill" id="bulkSelectedCount">0 selected</span>
+    <button type="button" class="btn-primary btn-sm" id="bulkApproveBtn">Approve All ✓</button>
+    <button type="button" class="btn-secondary btn-sm" id="bulkShiftWeekBtn">Shift +7 Days</button>
+    <select id="bulkStatusSelect" class="compact-select" aria-label="Bulk change status">
+      <option value="">Set status...</option>
+      <option value="Draft">Draft</option>
+      <option value="Internal review">Internal review</option>
+      <option value="Client review">Client review</option>
+      <option value="Approved">Approved</option>
+      <option value="Scheduled">Scheduled</option>
+      <option value="Posted">Posted</option>
+    </select>
+    <button type="button" class="btn-ghost btn-sm" id="bulkClearBtn">Clear</button>
   </div>
 
   <!-- Toast Notification -->
@@ -1891,7 +1929,7 @@ window.adminView=function(){
 
 
   <!-- ========================================================================
-       MURNOVA UI BRIDGE (BINDS FIRST DESIGN SHELL TO V1 SUPABASE ENGINE)
+       LOOMWELLOPS UI BRIDGE (BINDS FIRST DESIGN SHELL TO V1 SUPABASE ENGINE)
        ======================================================================== -->
   <script>
   (function() {
@@ -1961,13 +1999,13 @@ window.adminView=function(){
 
     // Theme Switcher (Light & Dark Ribbon Wallpapers)
     function initMurnovaTheme() {
-      const saved = localStorage.getItem('murnova_theme_v4') || 'light';
+      const saved = localStorage.getItem('loomwellops_theme_v4') || 'light';
       document.documentElement.setAttribute('data-theme', saved);
       document.getElementById('themeToggle').onclick = () => {
         const cur = document.documentElement.getAttribute('data-theme');
         const next = cur === 'light' ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('murnova_theme_v4', next);
+        localStorage.setItem('loomwellops_theme_v4', next);
         toast(`Switched to ${next === 'dark' ? 'Dark' : 'Light'} Mode`);
       };
     }
@@ -2029,7 +2067,7 @@ window.adminView=function(){
         };
       } else {
         sel.style.display = 'none';
-        if (CNAME) brandTitle.textContent = CNAME;
+        brandTitle.textContent = CNAME ? `LoomWellOps · ${CNAME}` : 'LoomWellOps';
       }
     }
 
@@ -2054,6 +2092,158 @@ window.adminView=function(){
         bId.style.display = newIdeas > 0 ? 'inline-block' : 'none';
       }
     }
+
+
+    // ================= ENHANCEMENT 1: MULTI-SELECT BULK ACTION BAR =================
+    const selectedPostIds = new Set();
+
+    function syncBulkActionBar() {
+      const bar = document.getElementById('bulkActionBar');
+      const countEl = document.getElementById('bulkSelectedCount');
+      if (!bar || !countEl) return;
+      const n = selectedPostIds.size;
+      countEl.textContent = `${n} selected`;
+      bar.classList.toggle('visible', n > 0);
+      bar.setAttribute('aria-hidden', n === 0 ? 'true' : 'false');
+    }
+
+    // ================= ENHANCEMENT 2: VISUAL INSTAGRAM 3x3 GRID PREVIEW =================
+    function renderInstagramGridPreview() {
+      const grid = document.getElementById('igVisualGrid3x3');
+      if (!grid) return;
+      const igPosts = posts
+        .filter(p => p.platform === 'Instagram')
+        .sort((a, b) => `${b.post_date || ''} ${b.post_time || ''}`.localeCompare(`${a.post_date || ''} ${a.post_time || ''}`))
+        .slice(0, 9);
+
+      if (!igPosts.length) {
+        grid.innerHTML = `<div style="grid-column:span 3;padding:18px 8px;text-align:center;font-size:0.74rem;color:var(--text-muted);">No Instagram posts scheduled yet.</div>`;
+        return;
+      }
+
+      grid.innerHTML = igPosts.map(p => {
+        const thumb = thumbUrl(p.visual, 'w300');
+        const shortCap = (p.caption || p.pillar || 'IG Post').slice(0, 55);
+        return `
+          <div class="ig-tile" data-ig-post-id="${esc(p.id)}" title="${esc(p.post_date || '')} · ${esc(shortCap)}">
+            ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove()" />` : `<span class="ig-tile-caption">${esc(shortCap)}</span>`}
+            <span class="ig-tile-badge">${esc((p.post_date || '').slice(5) || 'DRAFT')}</span>
+          </div>
+        `;
+      }).join('');
+
+      grid.querySelectorAll('[data-ig-post-id]').forEach(tile => {
+        tile.onclick = () => {
+          const post = posts.find(x => x.id === tile.dataset.igPostId);
+          if (post) openUnifiedPostEditor(post);
+        };
+      });
+    }
+
+    // ================= ENHANCEMENT 3: OPTIMAL POSTING WINDOWS FROM META INSIGHTS =================
+    function updateOptimalTimeStrip() {
+      const strip = document.getElementById('optimalTimeStrip');
+      if (!strip) return;
+      const withReach = posts.filter(p => p.reach != null && p.post_time && p.post_date);
+      if (withReach.length < 3) return; // Keep smart defaults until enough Meta CSV data is imported
+
+      const byPlat = {};
+      withReach.forEach(p => {
+        const hr = parseInt(p.post_time.slice(0, 2), 10);
+        const dayName = new Date(p.post_date + 'T00:00').toLocaleDateString('en-US', { weekday: 'short' });
+        const key = `${dayName} ${hr % 12 || 12}:00 ${hr < 12 ? 'AM' : 'PM'}`;
+        byPlat[p.platform] = byPlat[p.platform] || {};
+        const slot = byPlat[p.platform][key] || { sum: 0, count: 0 };
+        slot.sum += +p.reach || 0;
+        slot.count += 1;
+        byPlat[p.platform][key] = slot;
+      });
+
+      const pills = Object.entries(byPlat).slice(0, 4).map(([plat, slots]) => {
+        const best = Object.entries(slots).sort((a, b) => (b[1].sum / b[1].count) - (a[1].sum / a[1].count))[0];
+        return `<span class="best-time-pill">${getPlatBadge(plat)} · ${best[0]} (avg ${Math.round(best[1].sum / best[1].count).toLocaleString()} reach)</span>`;
+      });
+
+      if (pills.length) {
+        strip.innerHTML = `<span>⚡ Data-backed best times:</span>` + pills.join('');
+      }
+    }
+
+    // ================= ENHANCEMENT 4: AI HOOK & HASHTAG GENERATOR IN COMPOSER =================
+    function injectAiHookStudio() {
+      const f = document.getElementById('pf');
+      if (!f || f.dataset.aiHookReady) return;
+      f.dataset.aiHookReady = '1';
+      const ta = f.elements.namedItem('caption');
+      const ht = f.elements.namedItem('hashtags');
+      const pl = f.elements.namedItem('platform');
+      const pil = f.elements.namedItem('pillar');
+      if (!ta) return;
+
+      const box = document.createElement('div');
+      box.className = 'ai-hook-box';
+      box.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span style="font-size:0.78rem;font-weight:700;color:#8b5cf6;">✨ LoomWellOps Hook &amp; Hashtag Studio</span>
+          <button type="button" id="genHooksBtn" style="padding:4px 12px;font-size:0.75rem;">Generate Hooks &amp; Tags</button>
+        </div>
+        <div class="ai-hook-list" id="aiHookResults"></div>
+      `;
+      ta.insertAdjacentElement('afterend', box);
+
+      document.getElementById('genHooksBtn').onclick = () => {
+        const platform = pl ? pl.value : 'Instagram';
+        const pillar = pil ? pil.value : 'Educational';
+        const topic = (ta.value.trim().split(/[.!?
+]/)[0] || pillar || 'our latest update').slice(0, 70);
+
+        const hooks = [
+          `Stop scrolling if you want to level up your ${pillar.toLowerCase()} game 👇
+
+${ta.value || topic}`,
+          `3 things most people miss about ${topic}:
+
+1. Start with clarity
+2. Stay consistent
+3. Save this post for later ✨`,
+          `Behind the scenes of ${topic} — here is what actually works on ${platform} right now 🚀`
+        ];
+
+        const tagMap = {
+          'Instagram': '#SocialMediaStrategy #ContentCreator #LoomWellOps #DigitalMarketing #ReelsTips',
+          'LinkedIn': '#B2BMarketing #ContentOperations #GrowthStrategy #Leadership #MarketingOps',
+          'TikTok': '#ContentTips #CreatorWorkflow #SocialMediaManager #BehindTheScenes #FYP',
+          'Facebook': '#CommunityFirst #LocalBusiness #SocialMediaMarketing #CustomerSpotlight',
+          'Google Business Profile': '#LocalService #TrustedTeam #BookNow #CustomerExperience'
+        };
+
+        const resEl = document.getElementById('aiHookResults');
+        resEl.innerHTML = hooks.map((h, i) => `
+          <button type="button" class="ai-hook-option" data-hook-idx="${i}">
+            <strong>Option ${i + 1}:</strong> ${esc(h.split('
+')[0])}
+          </button>
+        `).join('');
+
+        resEl.querySelectorAll('.ai-hook-option').forEach(btn => {
+          btn.onclick = () => {
+            ta.value = hooks[+btn.dataset.hookIdx];
+            ta.dispatchEvent(new Event('input', { bubbles: true }));
+            if (ht && !ht.value.trim()) {
+              ht.value = tagMap[platform] || '#LoomWellOps #ContentCalendar';
+              ht.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            toast('Applied hook & platform hashtags!');
+          };
+        });
+      };
+    }
+
+    const _origOpenUnified = openUnifiedPostEditor;
+    openUnifiedPostEditor = function(postObj) {
+      _origOpenUnified(postObj);
+      requestAnimationFrame(injectAiHookStudio);
+    };
 
     // ================= RENDER CALENDAR (MONTH / WEEK / BOARD / TIMELINE) =================
     function renderMurnovaCalendar() {
@@ -2085,7 +2275,10 @@ window.adminView=function(){
       }
 
       renderMurnovaMiniCal(y, m);
+      renderInstagramGridPreview();
+      updateOptimalTimeStrip();
       renderMurnovaDraftsQueue();
+      syncBulkActionBar();
       updateNavBadges();
     }
 
@@ -2136,8 +2329,10 @@ window.adminView=function(){
             ${dayPosts.map(p => {
               const title = (p.caption || p.pillar || p.format || 'Untitled Post').replace(/\s+/g, ' ').trim();
               const colorCls = getPillColorClass(p);
+              const isSel = selectedPostIds.has(p.id);
               return `
-                <div class="event-pill ${colorCls}" draggable="true" data-post-id="${esc(p.id)}" title="${esc(p.platform)} · ${esc(title)}">
+                <div class="event-pill ${colorCls} ${isSel ? 'is-selected' : ''}" draggable="true" data-post-id="${esc(p.id)}" title="${esc(p.platform)} · ${esc(title)}">
+                  <input type="checkbox" class="ev-select-cb" data-select-id="${esc(p.id)}" ${isSel ? 'checked' : ''} title="Select post for bulk action" />
                   <span class="ev-plat-tag">${getPlatBadge(p.platform)}</span>
                   <span class="ev-title-text">${esc(title)}</span>
                 </div>
@@ -2198,17 +2393,17 @@ window.adminView=function(){
       const cols = stList();
       const monthPosts = list.filter(p => inMonth(p, y, m));
       container.innerHTML = `
-        <div class="murnova-board">
+        <div class="loomwellops-board">
           ${cols.map(status => {
             const colItems = monthPosts.filter(p => (p.status || 'Draft') === status);
             return `
-              <div class="murnova-bcol" data-board-status="${esc(status)}">
-                <div class="murnova-bcol-head">
+              <div class="loomwellops-bcol" data-board-status="${esc(status)}">
+                <div class="loomwellops-bcol-head">
                   <span>${esc(status)}</span>
                   <span class="badge-soft">${colItems.length}</span>
                 </div>
                 ${colItems.map(p => `
-                  <div class="murnova-bcard" draggable="true" data-post-id="${esc(p.id)}" style="border-left:4px solid ${safeCol(PILLARS[p.pillar])};">
+                  <div class="loomwellops-bcard" draggable="true" data-post-id="${esc(p.id)}" style="border-left:4px solid ${safeCol(PILLARS[p.pillar])};">
                     <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;">
                       <span>${getPlatBadge(p.platform)} · ${esc(p.post_date || 'No date')}</span>
                       <span>${esc(p.approval)}</span>
@@ -2222,7 +2417,7 @@ window.adminView=function(){
         </div>
       `;
 
-      container.querySelectorAll('.murnova-bcard').forEach(card => {
+      container.querySelectorAll('.loomwellops-bcard').forEach(card => {
         card.onclick = () => {
           const post = posts.find(x => x.id === card.dataset.postId);
           if (post) openUnifiedPostEditor(post);
@@ -2233,7 +2428,7 @@ window.adminView=function(){
         };
       });
 
-      container.querySelectorAll('.murnova-bcol').forEach(col => {
+      container.querySelectorAll('.loomwellops-bcol').forEach(col => {
         col.ondragover = (e) => { e.preventDefault(); col.classList.add('drag-over'); };
         col.ondragleave = () => col.classList.remove('drag-over');
         col.ondrop = async (e) => {
@@ -2295,8 +2490,20 @@ window.adminView=function(){
         };
       });
 
+      container.querySelectorAll('[data-select-id]').forEach(cb => {
+        cb.onclick = (e) => {
+          e.stopPropagation();
+          const id = cb.dataset.selectId;
+          if (cb.checked) selectedPostIds.add(id);
+          else selectedPostIds.delete(id);
+          cb.closest('.event-pill')?.classList.toggle('is-selected', cb.checked);
+          syncBulkActionBar();
+        };
+      });
+
       container.querySelectorAll('[data-post-id]').forEach(pill => {
         pill.onclick = (e) => {
+          if (e.target.closest('.ev-select-cb')) return;
           e.stopPropagation();
           const post = posts.find(x => x.id === pill.dataset.postId);
           if (post) openUnifiedPostEditor(post);
@@ -2649,8 +2856,8 @@ window.adminView=function(){
     // Hook into V1's adminView & clientView so whenever Supabase finishes loading or updating, Murnova's First Design renders!
     const _origAdminView = window.adminView;
     window.adminView = function() {
-      document.getElementById('murnovaLoginScreen').style.display = 'none';
-      document.getElementById('murnovaAppShell').style.display = 'flex';
+      document.getElementById('loomwellopsLoginScreen').style.display = 'none';
+      document.getElementById('loomwellopsAppShell').style.display = 'flex';
       renderAllMurnova();
       requestAnimationFrame(() => {
         const activeNav = document.querySelector('#mainNav .nav-item.active');
@@ -2662,9 +2869,9 @@ window.adminView=function(){
     const _origClientView = window.clientView;
     window.clientView = function() {
       // For client role, show V1's streamlined client approval portal inside #app or keep glassmorphic shell
-      document.getElementById('murnovaLoginScreen').style.display = 'none';
+      document.getElementById('loomwellopsLoginScreen').style.display = 'none';
       if (me && me.role !== 'admin') {
-        document.getElementById('murnovaAppShell').style.display = 'none';
+        document.getElementById('loomwellopsAppShell').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         return _origClientView.apply(this, arguments);
       }
@@ -2673,9 +2880,9 @@ window.adminView=function(){
 
     const _origLoginView = window.loginView;
     window.loginView = function(msg = '') {
-      document.getElementById('murnovaAppShell').style.display = 'none';
+      document.getElementById('loomwellopsAppShell').style.display = 'none';
       document.getElementById('app').style.display = 'none';
-      const screen = document.getElementById('murnovaLoginScreen');
+      const screen = document.getElementById('loomwellopsLoginScreen');
       screen.style.display = 'flex';
       document.getElementById('mLoginErr').textContent = msg || '';
     };
@@ -2685,7 +2892,7 @@ window.adminView=function(){
       initMurnovaTheme();
 
       // Login form handler
-      document.getElementById('murnovaLoginForm').onsubmit = async (e) => {
+      document.getElementById('loomwellopsLoginForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('mLoginBtn');
         btn.disabled = true;
@@ -2838,6 +3045,75 @@ window.adminView=function(){
         toast('Client approval reminder copied to clipboard!');
       };
       document.getElementById('appRemindBtn').onclick = () => document.getElementById('ovRemindClientBtn').click();
+
+      // Client Shareable Approval Portal Link Modal
+      document.getElementById('autoShareClientLinkBtn').onclick = () => {
+        const d = document.getElementById('dlg');
+        const cObj = clients.find(c => c.id === cid) || {};
+        const slug = (cObj.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const portalUrl = `${location.origin}${location.pathname}${slug ? '?c=' + encodeURIComponent(slug) : ''}`;
+        d.innerHTML = `
+          <h2 style="margin-top:0">🔗 Client Approval Portal Link</h2>
+          <p class="muted-text">Share this link with <strong>${esc(cObj.name || 'your client')}</strong>. When they log in, they will see their dedicated approval view, 1-tap Approve / Request Changes buttons, and Idea Bank.</p>
+          <label>Client Portal URL</label>
+          <input type="text" id="sharePortalUrlInput" readonly value="${esc(portalUrl)}" />
+          <div class="row" style="margin-top:14px;">
+            <button type="button" class="p" id="copyPortalUrlBtn">Copy Link</button>
+            <button type="button" id="closeShareModalBtn">Close</button>
+          </div>
+        `;
+        d.showModal();
+        document.getElementById('closeShareModalBtn').onclick = () => d.close();
+        document.getElementById('copyPortalUrlBtn').onclick = () => {
+          navigator.clipboard?.writeText(portalUrl);
+          toast('Client approval link copied!');
+        };
+      };
+
+      // Bulk Action Bar Controls
+      document.getElementById('bulkClearBtn').onclick = () => {
+        selectedPostIds.clear();
+        renderMurnovaCalendar();
+      };
+
+      document.getElementById('bulkApproveBtn').onclick = async () => {
+        const ids = [...selectedPostIds];
+        if (!ids.length) return;
+        const r = await sb.from('posts').update({ approval: 'Approved', status: 'Approved' }).in('id', ids);
+        if (r.error) return alert('Bulk approve error: ' + r.error.message);
+        selectedPostIds.clear();
+        await loadPosts();
+        renderMurnovaCalendar();
+        toast(`Approved ${ids.length} posts!`);
+      };
+
+      document.getElementById('bulkShiftWeekBtn').onclick = async () => {
+        const ids = [...selectedPostIds];
+        if (!ids.length) return;
+        for (const id of ids) {
+          const p = posts.find(x => x.id === id);
+          if (p && p.post_date) {
+            await sb.from('posts').update({ post_date: addDays(p.post_date, 7) }).eq('id', id);
+          }
+        }
+        selectedPostIds.clear();
+        await loadPosts();
+        renderMurnovaCalendar();
+        toast(`Shifted ${ids.length} posts forward by 7 days!`);
+      };
+
+      document.getElementById('bulkStatusSelect').onchange = async (e) => {
+        const st = e.target.value;
+        const ids = [...selectedPostIds];
+        if (!st || !ids.length) return;
+        const r = await sb.from('posts').update({ status: st }).in('id', ids);
+        e.target.value = '';
+        if (r.error) return alert('Bulk status error: ' + r.error.message);
+        selectedPostIds.clear();
+        await loadPosts();
+        renderMurnovaCalendar();
+        toast(`Updated ${ids.length} posts to ${st}`);
+      };
 
       // Search shortcut (Ctrl+K or Search Icon)
       document.getElementById('searchTrigger').onclick = () => {
