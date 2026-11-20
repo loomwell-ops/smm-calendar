@@ -3496,47 +3496,130 @@ new MutationObserver(go).observe(document.body,{childList:true,subtree:true});
 </script>
 
 
-<!-- GSAP SLIDING PILL ENHANCEMENT (Reference Video Motion) -->
+<!-- GSAP SLIDING PILL MOTION ENGINE (Reference Video Spring/Easing Physics) -->
 <script>
 (function() {
   'use strict';
+
+  /**
+   * GSAP Sliding Pill helper matching the reference video's slidePill(pill, box, target, animate)
+   */
   function slidePill(pill, box, target, animate = true) {
     if (!pill || !box || !target) return;
     const L = target.offsetLeft;
     const T = target.offsetTop;
     const w = target.offsetWidth;
     const h = target.offsetHeight;
+
     if (!animate || typeof gsap === 'undefined') {
       pill.style.width = w + 'px';
       pill.style.height = h + 'px';
       pill.style.transform = `translate(${L}px, ${T}px)`;
       return;
     }
-    gsap.to(pill, { x: L, y: T, width: w, height: h, duration: 0.34, ease: 'power3.out' });
+
+    gsap.to(pill, {
+      x: L,
+      y: T,
+      width: w,
+      height: h,
+      duration: 0.36,
+      ease: 'power3.out',
+      overwrite: 'auto'
+    });
   }
 
-  function enhanceSegPills() {
-    document.querySelectorAll('.seg').forEach(seg => {
-      const active = seg.querySelector('button.on');
-      if (!active) return;
-      let slider = seg.querySelector('.seg-slider');
-      if (!slider) {
-        slider = document.createElement('div');
-        slider.className = 'seg-slider';
-        seg.prepend(slider);
-        slidePill(slider, seg, active, false);
-      } else {
-        slidePill(slider, seg, active, true);
-      }
+  // Remember previous pill rects per container key so re-renders animate smoothly from old position to new position!
+  const prevRects = new Map();
+
+  function syncPillContainer(container, key, itemSelector, activeSelector, sliderClass) {
+    if (!container) return;
+    const active = container.querySelector(activeSelector);
+    if (!active) return;
+
+    let slider = container.querySelector('.' + sliderClass);
+    if (!slider) {
+      slider = document.createElement('div');
+      slider.className = sliderClass;
+      container.prepend(slider);
+    }
+
+    const prev = prevRects.get(key);
+    const next = {
+      x: active.offsetLeft,
+      y: active.offsetTop,
+      w: active.offsetWidth,
+      h: active.offsetHeight
+    };
+
+    if (prev && (prev.x !== next.x || prev.y !== next.y || prev.w !== next.w)) {
+      // Snap to previous position, then animate smoothly to the newly selected pill
+      slider.style.width = prev.w + 'px';
+      slider.style.height = prev.h + 'px';
+      slider.style.transform = `translate(${prev.x}px, ${prev.y}px)`;
+      requestAnimationFrame(() => slidePill(slider, container, active, true));
+    } else {
+      slidePill(slider, container, active, false);
+    }
+
+    prevRects.set(key, next);
+  }
+
+  function enhanceAllPills() {
+    // 1. Admin & Filter Segmented Controls (.seg: Calendar / List / Board / Feed, All / Upcoming / Posted, etc.)
+    document.querySelectorAll('.seg').forEach((seg, idx) => {
+      const key = 'seg-' + (seg.getAttribute('aria-label') || idx);
+      syncPillContainer(seg, key, 'button', 'button.on', 'gsap-pill-bg');
     });
+
+    // 2. Feed Platform Tabs (.ftabs: Instagram / Facebook / LinkedIn / TikTok / Google Business)
+    document.querySelectorAll('.ftabs').forEach((tabs, idx) => {
+      syncPillContainer(tabs, 'ftabs-' + idx, '.fpt', '.fpt.on', 'gsap-pill-bg');
+    });
+
+    // 3. Client Top View Switcher Row (#cm > .row:first-child: One at a time / List / Calendar / Feed / This week)
+    const clientRow = document.querySelector('#cm > .row:first-child');
+    if (clientRow && (clientRow.querySelector('#one') || clientRow.querySelector('#lv'))) {
+      if (!clientRow.classList.contains('cc-pill-bar')) {
+        clientRow.classList.add('cc-pill-bar');
+        // Mark current view button as .on
+        const curBtn =
+          (lv === false && clientRow.querySelector('#one')) ||
+          (lv === true && (clientRow.querySelector('#lst') || clientRow.querySelector('#lv'))) ||
+          (lv === 'cal' && (clientRow.querySelector('#cvb') || clientRow.querySelector('#cvb2') || clientRow.querySelector('#cvb3'))) ||
+          (lv === 'feed' && (clientRow.querySelector('#fvb') || clientRow.querySelector('#fvb2') || clientRow.querySelector('#fvb3'))) ||
+          (lv === 'week' && clientRow.querySelector('#wkb'));
+        if (curBtn) curBtn.classList.add('on');
+      }
+      syncPillContainer(clientRow, 'client-view-bar', 'button', 'button.on', 'gsap-pill-bg');
+    }
+
+    // 4. Admin Left Sidebar (#sbar) Sliding Active Pill
+    const sbar = document.getElementById('sbar');
+    if (sbar) {
+      syncPillContainer(sbar, 'admin-sidebar', '.ni', '.ni.on', 'nav-pill-slider');
+    }
+
+    // 5. Mobile Bottom Tab Bar (#tabs)
+    const tabs = document.getElementById('tabs');
+    if (tabs) {
+      syncPillContainer(tabs, 'mobile-tabs', 'button', 'button.on', 'gsap-pill-bg');
+    }
   }
 
   let raf = 0;
   new MutationObserver(() => {
     cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(enhanceSegPills);
-  }).observe(document.getElementById('app'), { childList: true, subtree: true });
-  window.addEventListener('resize', enhanceSegPills);
+    raf = requestAnimationFrame(enhanceAllPills);
+  }).observe(document.body, { childList: true, subtree: true });
+
+  window.addEventListener('resize', () => {
+    prevRects.clear();
+    enhanceAllPills();
+  });
+
+  // Initial pass
+  requestAnimationFrame(enhanceAllPills);
 })();
 </script>
 

@@ -1,4 +1,4 @@
-const CACHE = 'murnova-cal-v2';
+const CACHE = 'murnova-cal-v3';
 const ASSETS = ['./', './index.html', './theme.css', './manifest.webmanifest', './icon.svg', './assets/bg-light.webp', './assets/bg-dark.jpg'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(() => {}));
