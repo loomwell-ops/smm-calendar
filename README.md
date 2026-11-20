@@ -1,20 +1,14 @@
-# Murnova — Social Media Management & Publishing Calendar
+# Content Calendar — Integrated V1 + Glassmorphic Light/Dark UI
 
-A lightweight, zero-build, glassmorphic **Social Media Publishing Calendar** designed for hosting directly on **GitHub Pages**.
+This repository combines your full **V1 Supabase Content Calendar** (Admin + Client portals, approval workflows, Kanban Board view, Excel/Meta CSV imports, Google Drive media uploads, Insights, PWA & push notifications) with the **Glassmorphic UI & Custom Light/Dark Ribbon Wallpapers** (`assets/bg-light.webp` & `assets/bg-dark.jpg`) and GSAP sliding pill transitions.
 
-## Features
-- **Inspired UI & Smooth Spring Transitions**: Top navigation tabs (`Overview`, `Calendar`, `Inbox`, `Approvals`, `Analytics`, `Listening`) and view switchers (`Week`, `Month`, `Timeline`) powered by smooth GSAP pill animations.
-- **Custom Light & Dark Mode Wallpapers**: Seamless theme toggle (`☀️ / 🌙`) switching between your custom light ribbon (`assets/bg-light.webp`) and dark ribbon (`assets/bg-dark.jpg`) backgrounds.
-- **Interactive Publishing Calendar**:
-  - **Create, Edit & Delete Posts** across Instagram, LinkedIn, X/Twitter, YouTube, and TikTok.
-  - **Drag-and-Drop Scheduling**: Drag unscheduled drafts or existing posts onto any date cell to reschedule instantly.
-  - **Multi-View Support**: Switch between Month Grid, 7-Day Week Board, and Chronological Timeline.
-  - **Channel & Status Filtering**: Filter posts by social platform or approval status (`Approved`, `Scheduled`, `Pending`, `Draft`).
-- **Local Persistence & JSON Export**: Automatically saves changes in `localStorage` with one-click JSON backup export.
+## Included Files
+- `index.html` — Complete V1 application engine + all add-on modules + GSAP sliding pill UI.
+- `theme.css` — Frosted glassmorphism theme, light/dark wallpaper switching, and responsive layout styles.
+- `assets/bg-light.webp` & `assets/bg-dark.jpg` — Custom light and dark mode ribbon backgrounds.
+- `branding.json`, `manifest.webmanifest`, `sw.js`, `icon.svg`, `icon-180.png`, `icon-192.png`, `icon-512.png`, `login-bg.jpg`, `login-shiputah.jpg` — Full PWA & multi-client branding assets.
 
-## How to Host on GitHub Pages
-1. Create a new GitHub repository (e.g. `social-media-calendar`).
-2. Upload all files from this folder (`index.html`, `style.css`, `app.js`, `README.md`, and the `assets/` folder).
-3. Go to **Settings → Pages** in your GitHub repository.
-4. Under **Build and deployment**, select **Deploy from a branch**, choose `main` and `/ (root)`, then click **Save**.
-5. Your live Social Media Calendar will be published at `https://<your-username>.github.io/social-media-calendar/`.
+## Deploying to GitHub Pages
+1. Extract the contents of `content-calendar-v2-integrated.zip` directly into the root of your GitHub repository (`japhette-vms.github.io/content-calendar`).
+2. Commit and push to `main`.
+3. GitHub Pages will serve the updated calendar automatically with zero build steps required.
