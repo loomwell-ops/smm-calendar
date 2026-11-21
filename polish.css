@@ -32,7 +32,7 @@ html.lw-solid *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impo
 .lw-today{display:flex;align-items:center;gap:10px;margin:8px 0;color:var(--accent-primary);font:700 11px var(--font-sans);letter-spacing:.08em;text-transform:uppercase}
 .lw-today i{flex:1;height:2px;background:var(--accent-primary);border-radius:2px;transform-origin:left}
 .timeline-row{position:relative}
-.timeline-row::after{content:'';position:absolute;left:0;bottom:0;height:3px;width:var(--st,0%);background:var(--accent-primary);border-radius:3px;transform-origin:left;opacity:.8}
+.timeline-row::after{content:'';position:absolute;left:0;bottom:0;height:3px;width:var(--st,0%);background:var(--accent-primary);border-radius:3px;transform-origin:left;opacity:.8;animation:lwgrow .9s .2s cubic-bezier(.22,1,.36,1) both}
 #lwHeat{margin-top:16px;padding:16px}
 #lwHeat h3{margin:0 0 4px}#lwHeat p{margin:0 0 12px;color:var(--text-muted);font-size:12px}
 #lwHeat .hm{display:grid;grid-template-columns:34px repeat(17,minmax(0,1fr));gap:3px;overflow-x:auto;min-width:0}
@@ -44,3 +44,13 @@ html.lw-solid *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impo
 .lw-login>*:not(.lw-blade){position:relative;z-index:1}
 .lw-blade{position:absolute!important;inset:-20% -35%;pointer-events:none;z-index:2!important;opacity:0;background:linear-gradient(100deg,transparent 44%,var(--accent-primary) 44% 56%,transparent 56%);transform:translateX(-130%) skewX(-12deg)}
 .lw-login[data-mode=reset] #pw,.lw-login[data-mode=reset] label[for=pw]{display:none}
+@keyframes lwgrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media(prefers-reduced-motion:reduce){.timeline-row::after{animation:none}}
+/* timeline: keep the platform badge compact instead of full width */
+.timeline-row .event-pill{width:auto;flex:0 0 auto;min-width:46px;justify-content:center}
+.timeline-row>div:first-child{flex:1;min-width:0}
+.timeline-row>div:first-child>div{min-width:0}
+/* weekly goal pace card: give the plain stat blocks a layout */
+.glass-card .pace{display:grid;gap:10px}
+.glass-card .pace .stat{padding:12px 14px;border-radius:12px;background:var(--surface-subtle);border:1px solid var(--border-glass);font-size:13px;color:var(--text-secondary)}
+.glass-card .pace .stat b{display:block;margin-bottom:2px;font-size:20px;color:var(--text-primary)}

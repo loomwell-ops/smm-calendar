@@ -142,8 +142,7 @@ new MutationObserver(()=>{const tl=$('.timeline-list:not([data-lw])');if(!tl)ret
     if(!at&&p.post_date>=t)at=r;});
   const m=document.createElement('div');m.className='lw-today';m.innerHTML='<span>Today</span><i></i>';at?tl.insertBefore(m,at):tl.appendChild(m);
   if(G()){gsap.from(rows,{opacity:0,y:12,duration:.4,stagger:.03,clearProps:'opacity,transform'});
-    gsap.from(m.querySelector('i'),{scaleX:0,duration:.8,delay:.25,ease:'power3.out'});
-    gsap.from($$('.timeline-row',tl),{'--st':'0%',duration:.9,delay:.2});}
+    gsap.from(m.querySelector('i'),{scaleX:0,duration:.8,delay:.25,ease:'power3.out'});}
 }).observe(document.body,{childList:true,subtree:true});
 
 /* 5 + 8. Analytics: posting heatmap and KPI sparklines */
