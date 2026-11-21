@@ -122,7 +122,7 @@ const today=()=>{const g=$('#view-overview .overview-grid');if(!g)return;
       if(error){r.classList.remove('done');c.checked=false;c.disabled=false;return window.toast&&toast('Could not update: '+error.message);}
       p.status='Posted';typeof liveRefresh==='function'&&liveRefresh();today();};
     card.appendChild(r);});
-  if(G())gsap.from(card.querySelectorAll('.lw-row'),{opacity:0,y:10,duration:.4,stagger:.05,clearProps:'all'});};
+  if(G())gsap.from(card.querySelectorAll('.lw-row'),{opacity:0,y:10,duration:.4,stagger:.05,clearProps:'opacity,transform'});};
 watch('#ovUpNext',()=>defer('today',today));
 
 /* 4. Live pops: badges tick, new "Needs you" cards slide in */
@@ -132,7 +132,7 @@ const prev={};
   if(o!==undefined&&n>o&&G())gsap.fromTo(el,{scale:1.6},{scale:1,duration:.55,ease:'back.out(3)'});},{childList:true,characterData:true,subtree:true}));
 const seen=new Set();
 watch('#overviewAttentionList',el=>{const fresh=[...el.children].filter(c=>{const k=c.textContent.trim();if(seen.has(k))return false;seen.add(k);return true;});
-  if(fresh.length&&seen.size>fresh.length&&G())gsap.from(fresh,{opacity:0,x:-16,duration:.45,stagger:.06,ease:'power3.out',clearProps:'all'});});
+  if(fresh.length&&seen.size>fresh.length&&G())gsap.from(fresh,{opacity:0,x:-16,duration:.45,stagger:.06,ease:'power3.out',clearProps:'opacity,transform'});});
 
 /* 7. Timeline: today marker, staggered rows, status progress bar */
 new MutationObserver(()=>{const tl=$('.timeline-list:not([data-lw])');if(!tl)return;tl.dataset.lw=1;
@@ -164,7 +164,7 @@ const analytics=()=>{const k=$('#liveAnalyticsKpis'),grid=$('#liveAnalyticsGrid'
   for(let i=0;i<17;i++)html+='<span>'+((i+6)%3===0?(i+6):'')+'</span>';
   m.forEach((row,r)=>{html+='<span>'+D[r]+'</span>';row.forEach((n,c)=>{html+='<b title="'+D[r]+' '+(c+6)+':00 · '+n+' post'+(n===1?'':'s')+'" style="background:'+(n?'color-mix(in srgb,var(--accent-primary) '+Math.round(25+75*n/mx)+'%,var(--surface-subtle))':'var(--surface-subtle)')+'"></b>';});});
   h.innerHTML=html+'</div>';
-  if(G())gsap.from(h.querySelectorAll('b'),{opacity:0,scale:.4,duration:.35,stagger:{each:.004,from:'start'},clearProps:'all'});};
+  if(G())gsap.from(h.querySelectorAll('b'),{opacity:0,scale:.4,duration:.35,stagger:{each:.004,from:'start'},clearProps:'opacity,transform'});};
 watch('#liveAnalyticsKpis',()=>defer('an',analytics));
 
 /* 10. Login: diagonal blade between Sign in and Reset password */

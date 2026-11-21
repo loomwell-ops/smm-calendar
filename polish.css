@@ -37,7 +37,7 @@ html.lw-solid *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impo
 #lwHeat h3{margin:0 0 4px}#lwHeat p{margin:0 0 12px;color:var(--text-muted);font-size:12px}
 #lwHeat .hm{display:grid;grid-template-columns:34px repeat(17,minmax(0,1fr));gap:3px;overflow-x:auto;min-width:0}
 #lwHeat .hm span{font-size:10px;color:var(--text-muted);align-self:center}
-#lwHeat .hm b{aspect-ratio:1;min-width:14px;border-radius:4px}
+#lwHeat .hm b{height:22px;min-width:12px;border-radius:5px;border:1px solid var(--border-glass)}
 .lw-spark{display:block;margin-top:4px;width:64px;height:18px;overflow:visible}
 .lw-spark path{fill:none;stroke:var(--accent-primary);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 #app .login.lw-login{position:relative;overflow:hidden}
