@@ -160,7 +160,7 @@ const analytics=()=>{const k=$('#liveAnalyticsKpis'),grid=$('#liveAnalyticsGrid'
   const m=Array.from({length:7},()=>Array(17).fill(0));let mx=0;
   ps.forEach(p=>{if(!p.post_date||!p.post_time)return;const d=new Date(p.post_date+'T00:00:00'),hr=+p.post_time.slice(0,2)-6;
     if(isNaN(d)||hr<0||hr>16)return;mx=Math.max(mx,++m[(d.getDay()+6)%7][hr]);});
-  const D=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];let html='<h3>When you post</h3><p>Posts by weekday and hour (6am to 10pm). Darker means more posts.</p><div class="hm"><span></span>';
+  const D=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];let html='<h3>When you post</h3><p>Posts by weekday and hour (6am to 10pm). Brighter means more posts.</p><div class="hm"><span></span>';
   for(let i=0;i<17;i++)html+='<span>'+((i+6)%3===0?(i+6):'')+'</span>';
   m.forEach((row,r)=>{html+='<span>'+D[r]+'</span>';row.forEach((n,c)=>{html+='<b title="'+D[r]+' '+(c+6)+':00 · '+n+' post'+(n===1?'':'s')+'" style="background:'+(n?'color-mix(in srgb,var(--accent-primary) '+Math.round(25+75*n/mx)+'%,var(--surface-subtle))':'var(--surface-subtle)')+'"></b>';});});
   h.innerHTML=html+'</div>';
@@ -178,4 +178,26 @@ new MutationObserver(()=>{const f=$('#app form.login#lf:not([data-lw])');if(!f)r
   fp.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();swap(f.dataset.mode==='in');},true);
   f.addEventListener('submit',e=>{if(f.dataset.mode!=='reset')return;e.stopImmediatePropagation();e.preventDefault();orig();},true);
 }).observe(document.body,{childList:true,subtree:true});
+})();
+
+/* ===== login: split card, diagonal blade between "Welcome back" and "Reset password" ===== */
+(()=>{'use strict';
+const $=s=>document.querySelector(s),calm=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+const T={in:{h:'Welcome back',s:'Sign in to access your Social Media Publishing Calendar.',b:'Log in',f:'Forgot password?',ph:'Welcome <em>back.</em>',pp:'Your posts, approvals and clients are exactly where you left them.'},
+  reset:{h:'Reset password',s:'Enter your email and we will send you a reset link.',b:'Send reset link',f:'Back to sign in',ph:'Forgot it? <em>No problem.</em>',pp:'A secure link will land in your inbox in a minute.'}};
+const init=()=>{const f=$('#loomwellopsLoginForm');if(!f||f.dataset.lw)return;
+  const fp=$('#mForgotBtn'),pw=$('#mPass'),btn=$('#mLoginBtn'),err=$('#mLoginErr');if(!fp||!pw||!btn||!err)return;f.dataset.lw=1;
+  f.classList.add('lw-split');
+  const panel=document.createElement('aside');panel.className='lw-panel';panel.innerHTML='<small>LOOMWELLOPS</small><h2></h2><p></p>';
+  const bl=document.createElement('div');bl.className='lw-lblade';f.append(panel,bl);
+  const set=m=>{const t=T[m];f.dataset.mode=m;f.querySelector('h1').textContent=t.h;f.querySelector('p.sub').textContent=t.s;btn.textContent=t.b;fp.textContent=t.f;
+    panel.querySelector('h2').innerHTML=t.ph;panel.querySelector('p').textContent=t.pp;pw.required=m==='in';err.textContent='';};
+  set('in');
+  const go=m=>{if(!window.gsap||calm()||matchMedia('(max-width:640px)').matches){set(m);return;}
+    gsap.timeline().set(bl,{opacity:1,xPercent:-110,skewX:-14}).to(bl,{xPercent:0,duration:.5,ease:'power3.inOut'})
+      .add(()=>set(m)).to(bl,{xPercent:110,duration:.5,ease:'power3.inOut'}).set(bl,{opacity:0});};
+  fp.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();go(f.dataset.mode==='in'?'reset':'in');},true);
+  f.addEventListener('submit',e=>{if(f.dataset.mode!=='reset')return;e.stopImmediatePropagation();e.preventDefault();fp.onclick&&fp.onclick();},true);
+  new MutationObserver(()=>err.classList.toggle('lw-ok',/link sent/i.test(err.textContent))).observe(err,{childList:true,characterData:true,subtree:true});};
+init();new MutationObserver(init).observe(document.body,{childList:true,subtree:true});
 })();
