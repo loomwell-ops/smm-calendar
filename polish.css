@@ -1,0 +1,46 @@
+/* LoomWellOps polish layer: theme wipe, touch drag, approval ring, appearance panel */
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-old(root){z-index:1}::view-transition-new(root){z-index:2}
+.lw-ghost{position:fixed;left:0;top:0;z-index:9999;pointer-events:none;opacity:.95;box-shadow:0 18px 40px rgba(0,0,0,.45);border-radius:12px;will-change:transform}
+.lw-src{opacity:.35}
+body.lw-dragging{user-select:none;-webkit-user-select:none;overscroll-behavior:contain}
+@property --p{syntax:'<number>';inherits:false;initial-value:0}
+.lw-ring{--p:0;width:84px;height:84px;border-radius:50%;flex:none;display:grid;place-items:center;font:700 16px var(--font-sans);color:var(--text-primary);
+ background:conic-gradient(var(--accent-primary) calc(var(--p)*1%),var(--surface-subtle) 0);
+ -webkit-mask:radial-gradient(farthest-side,#0000 calc(100% - 9px),#000 calc(100% - 8px));mask:radial-gradient(farthest-side,#0000 calc(100% - 9px),#000 calc(100% - 8px));transition:--p .9s cubic-bezier(.22,1,.36,1)}
+.lw-ring-wrap{position:relative;display:grid;place-items:center;width:84px;height:84px;margin-bottom:10px}
+.lw-ring-wrap b{position:absolute;font:700 16px var(--font-sans);color:var(--text-primary)}
+#lwAppBtn{position:relative}
+#lwPanel{position:fixed;z-index:9998;width:250px;padding:14px;border-radius:16px;background:var(--surface-card);border:1px solid var(--border-strong);box-shadow:var(--shadow-shell);color:var(--text-primary);font:13px var(--font-sans);display:none}
+#lwPanel.open{display:block}
+#lwPanel h4{margin:0 0 10px;font-size:13px}
+#lwPanel .sw{display:flex;gap:8px;margin-bottom:14px}
+#lwPanel .sw button{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer}
+#lwPanel .sw button.on{border-color:var(--text-primary)}
+#lwPanel label{display:flex;gap:8px;align-items:center;cursor:pointer}
+html[data-theme=dark].lw-solid{--surface-glass:rgb(19,20,31);--surface-card:rgb(26,28,43);--surface-subtle:rgb(34,36,54);--surface-hover:rgb(45,48,70)}
+html[data-theme=light].lw-solid{--surface-glass:rgb(255,255,255);--surface-card:rgb(255,255,255);--surface-subtle:rgb(244,243,250);--surface-hover:rgb(238,236,248)}
+html.lw-solid *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+/* ---- round 2 ---- */
+#lwToday .lw-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;margin-top:6px;background:var(--surface-subtle)}
+#lwToday .lw-row.next{background:var(--surface-hover);outline:1px solid var(--accent-primary)}
+#lwToday .lw-row.done .t{text-decoration:line-through;opacity:.55}
+#lwToday .lw-row .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lwToday .lw-row small{color:var(--text-muted)}
+#lwToday .lw-row em{font-style:normal;font-size:11px;font-weight:700;color:var(--accent-primary)}
+#lwToday input{width:18px;height:18px;accent-color:var(--accent-primary)}
+.lw-today{display:flex;align-items:center;gap:10px;margin:8px 0;color:var(--accent-primary);font:700 11px var(--font-sans);letter-spacing:.08em;text-transform:uppercase}
+.lw-today i{flex:1;height:2px;background:var(--accent-primary);border-radius:2px;transform-origin:left}
+.timeline-row{position:relative}
+.timeline-row::after{content:'';position:absolute;left:0;bottom:0;height:3px;width:var(--st,0%);background:var(--accent-primary);border-radius:3px;transform-origin:left;opacity:.8}
+#lwHeat{margin-top:16px;padding:16px}
+#lwHeat h3{margin:0 0 4px}#lwHeat p{margin:0 0 12px;color:var(--text-muted);font-size:12px}
+#lwHeat .hm{display:grid;grid-template-columns:34px repeat(17,minmax(0,1fr));gap:3px;overflow-x:auto;min-width:0}
+#lwHeat .hm span{font-size:10px;color:var(--text-muted);align-self:center}
+#lwHeat .hm b{aspect-ratio:1;min-width:14px;border-radius:4px}
+.lw-spark{display:block;margin-top:4px;width:64px;height:18px;overflow:visible}
+.lw-spark path{fill:none;stroke:var(--accent-primary);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#app .login.lw-login{position:relative;overflow:hidden}
+.lw-login>*:not(.lw-blade){position:relative;z-index:1}
+.lw-blade{position:absolute!important;inset:-20% -35%;pointer-events:none;z-index:2!important;opacity:0;background:linear-gradient(100deg,transparent 44%,var(--accent-primary) 44% 56%,transparent 56%);transform:translateX(-130%) skewX(-12deg)}
+.lw-login[data-mode=reset] #pw,.lw-login[data-mode=reset] label[for=pw]{display:none}

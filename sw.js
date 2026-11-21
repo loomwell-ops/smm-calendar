@@ -1,6 +1,6 @@
 /* LoomWellOps service worker: offline app shell. Never touches Supabase or any cross-origin request. */
-const CACHE = 'loomwellops-shell-v1';
-const SHELL = ['./', 'index.html', 'style.css', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
+const CACHE = 'loomwellops-shell-v3';
+const SHELL = ['./', 'index.html', 'style.css', 'manifest.webmanifest', 'polish.css', 'polish.js', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.allSettled(SHELL.map(u => c.add(u)))).then(() => self.skipWaiting()));
 });

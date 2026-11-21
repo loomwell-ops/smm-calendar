@@ -14,6 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="polish.css">
 </head>
 <body>
   <!-- Background Image Layers (Custom Light & Dark Ribbon Wallpapers) -->
@@ -465,8 +466,13 @@ function demoSeed(){
     P(Math.min(today+5,28),'09:00','LinkedIn','Spotlight','Text Only','Draft','Pending','Hiring: friendly front-desk coordinator. Apply today.'),
     P(Math.min(today+6,29),'14:00','Instagram','Testimonials','Carousel','Client review','Changes requested','Before and after: Luis\'s Invisalign journey.',{id:'dp-changes'}),
     P(Math.min(today+7,30),'10:00','Facebook','Behind the Scenes','Video','Draft','Pending','Sneak peek at our new waiting room.'),
-    P(Math.min(today+8,30),'12:00','TikTok','Educational','Reel','Draft','Pending','3 myths about teeth whitening, busted.')
+    P(Math.min(today+8,30),'12:00','TikTok','Educational','Reel','Draft','Pending','3 myths about teeth whitening, busted.'),
+    P(Math.min(today+1,27),'08:00','Facebook','Promo','Static Photo','Client review','Pending','Flash offer: whitening kit ends tonight.',{due_date:d(Math.max(1,today-1))})
   ].filter((p,i,a)=>a.findIndex(q=>q.id===p.id)===i);
+  const pmd=dd=>{const q=new Date(y,m-1,dd);return q.getFullYear()+'-'+pad(q.getMonth()+1)+'-'+pad(q.getDate());};
+  [[3,'Instagram',3200],[8,'Facebook',2100],[14,'TikTok',7400],[20,'Instagram',2900],[25,'LinkedIn',900]].forEach(([dd,pl,r],i)=>posts.push(P(1,'10:00',pl,'Educational','Static Photo','Posted','Approved','Last month highlight '+(i+1)+'.',{id:'pm'+i,post_date:pmd(dd),reach:r,likes:Math.round(r*.07),engagements:Math.round(r*.1),due_date:null})));
+  const media=[];
+  posts.filter(p=>p.format==='Carousel').forEach(p=>{const n=p.id==='dp-changes'?5:4;for(let k=0;k<n;k++){const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="hsl('+(250+k*22)+',55%,45%)"/><text x="200" y="215" font-size="64" font-family="sans-serif" text-anchor="middle" fill="#fff">'+(k+1)+'</text></svg>';media.push({id:'dm'+p.id+k,post_id:p.id,status:'done',mime_type:'image/svg+xml',file_name:'slide'+(k+1)+'.svg',drive_file_id:null,demo_src:'data:image/svg+xml,'+encodeURIComponent(svg),created_at:new Date(Date.now()-(n-k)*6e4).toISOString()});}});
   const ago=h=>new Date(Date.now()-h*36e5).toISOString();
   return {
     profiles:[{id:DEMO_ADMIN,role:'admin',client_id:null,email:'you@agency.com'},{id:DEMO_CLI_USER,role:'client',client_id:DEMO_CLIENT,email:'owner@sunrisedental.com'}],
@@ -474,7 +480,7 @@ function demoSeed(){
     posts,
     key_dates:[{id:'k1',client_id:DEMO_CLIENT,key_date:d(27),label:'Thanksgiving',title:'Thanksgiving',name:'Thanksgiving'}],
     client_settings:[{client_id:DEMO_CLIENT,tz:'America/Denver',brand_color:'#7c5cd6'}],
-    hashtag_sets:[],ideas:[],post_media:[],post_versions:[],post_history:[],
+    hashtag_sets:[],ideas:[],post_media:media,post_versions:[],post_history:[],
     comments:[
       {id:'c1',post_id:'dp-changes',author_id:DEMO_CLI_USER,body:'Love it, but can we use Luis\'s first name only? He asked for that.',created_at:ago(5),resolved:false},
       {id:'c2',post_id:'dp-changes',author_id:DEMO_ADMIN,body:'Of course, I\'ll update the caption and resend.',created_at:ago(3),resolved:false}
@@ -3653,5 +3659,316 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
 </script>
+<script>
+/* ===== LoomWellOps Phase 1: stepper, readiness gauge, pacing, alerts, approval pipeline, save bar ===== */
+(function(){
+'use strict';
+const STEPS=['Draft','Client review','Approved','Scheduled','Posted'];
+const RULES={
+  'Instagram':{cap:[80,2200],tags:[3,10],hrs:[[9,12],[17,20]]},
+  'Facebook':{cap:[40,500],tags:[0,3],hrs:[[9,13],[15,17]]},
+  'LinkedIn':{cap:[150,1300],tags:[2,5],hrs:[[8,10],[12,13]]},
+  'TikTok':{cap:[20,150],tags:[3,6],hrs:[[18,22]]},
+  'Google Business Profile':{cap:[100,1500],tags:[0,2],hrs:[[9,12]]}
+};
+const $1=(s,r)=>(r||document).querySelector(s);
+const day=(a,b)=>Math.round((new Date(a+'T00:00')-new Date(b+'T00:00'))/864e5);
+const TD=()=>iso(new Date());
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const tone=s=>s>=80?'t-ok':s>=50?'t-warn':'t-bad';
+
+/* shared dial (semicircle, animated via CSS transition) */
+const REDM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function tween(el,from,to,ms){if(REDM||!el){if(el)el.textContent=to;return;}cancelAnimationFrame(el.__r);const t0=performance.now();
+  const st=t=>{const k=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-k,3);el.textContent=Math.round(from+(to-from)*e);if(k<1)el.__r=requestAnimationFrame(st);};el.__r=requestAnimationFrame(st);}
+function dial(score,label,size){
+  const s=clamp(Math.round(score),0,100);
+  return `<div class="p1-dial ${tone(s)}" data-s="${s}" data-l="${esc(label||'Score')}" style="--sz:${size||120}px" role="img" aria-label="${esc(label||'Score')} ${s} out of 100">
+  <svg viewBox="0 0 120 70" aria-hidden="true"><path class="trk" d="M10 62 A50 50 0 0 1 110 62" pathLength="100"/><path class="val" d="M10 62 A50 50 0 0 1 110 62" pathLength="100" style="stroke-dashoffset:${100-s}"/></svg>
+  <div class="num">${s}</div></div>`;
+}
+function kick(root){(root||document).querySelectorAll('.p1-dial[data-s]:not([data-k])').forEach(d=>{d.dataset.k='1';if(REDM)return;
+  const v=d.querySelector('.val'),n=d.querySelector('.num'),s=+d.dataset.s;v.style.transition='none';v.style.strokeDashoffset=100;void v.getBoundingClientRect();v.style.transition='';
+  requestAnimationFrame(()=>{v.style.strokeDashoffset=100-s;});tween(n,0,s,800);});}
+function setDial(d,s){s=clamp(Math.round(s),0,100);const old=+d.dataset.s;d.dataset.s=s;d.dataset.k='1';d.classList.remove('t-ok','t-warn','t-bad');d.classList.add(tone(s));
+  d.querySelector('.val').style.strokeDashoffset=100-s;tween(d.querySelector('.num'),old,s,500);d.setAttribute('aria-label',(d.dataset.l||'Score')+' '+s+' out of 100');}
+
+/* A. stepper */
+function stepper(status,approval){
+  let i=Math.max(0,STEPS.indexOf(status)),warn=false;
+  if(approval==='Changes requested'&&i<=1){i=1;warn=true;}
+  return `<ol class="p1-steps" aria-label="Post progress">${STEPS.map((s,k)=>{
+    const c=k<i?'done':k===i?(warn?'cur t-warn':'cur'):'';
+    return `<li class="${c}"${k===i?' aria-current="step"':''}><i>${k<i?'✓':warn&&k===i?'!':k+1}</i><span>${s==='Client review'&&warn?'Changes requested':s}</span></li>`;}).join('')}</ol>`;
+}
+
+/* B. readiness */
+function bestHour(plat){
+  const r=posts.filter(p=>p.platform===plat&&p.reach!=null&&p.post_time);
+  if(r.length<3)return null;
+  const h={};r.forEach(p=>{const k=parseInt(p.post_time.slice(0,2),10);(h[k]=h[k]||[]).push(+p.reach||0);});
+  let best=null,bv=-1;Object.entries(h).forEach(([k,v])=>{const a=v.reduce((x,y)=>x+y,0)/v.length;if(a>bv){bv=a;best=+k;}});
+  return best;
+}
+function readiness(v){
+  const R=RULES[v.platform]||{cap:[40,1500],tags:[0,10],hrs:[[9,17]]},out=[];
+  const L=(v.caption||'').trim().length,[c0,c1]=R.cap;
+  out.push({ok:L>=c0&&L<=c1,msg:L<c0?`Caption is short for ${v.platform} (${L}/${c0}+ characters)`:`Caption is long for ${v.platform} (${L}/${c1} max)`});
+  const n=((v.hashtags||'').match(/#[\p{L}\p{N}_]+/gu)||[]).length,[t0,t1]=R.tags;
+  out.push({ok:n>=t0&&n<=t1,msg:n<t0?`Add hashtags (${n}, aim for ${t0}–${t1})`:`Too many hashtags (${n}, aim for ${t0}–${t1})`});
+  out.push({ok:!!v.media,msg:'No image or video attached yet'});
+  let tOk=false,tm='Set a posting time';
+  if(v.time){const hr=parseInt(v.time.slice(0,2),10),b=bestHour(v.platform);
+    if(b!=null){tOk=Math.abs(hr-b)<=1;tm=`Time is far from your best hour for ${v.platform} (${b}:00, from your reach data)`;}
+    else{tOk=R.hrs.some(([a,z])=>hr>=a&&hr<=z);tm=`Outside typical ${v.platform} windows (general defaults, no reach data yet)`;}}
+  out.push({ok:tOk,msg:tm});
+  const dOk=!!v.due||v.approval==='Approved'||v.status==='Scheduled'||v.status==='Posted';
+  out.push({ok:dOk,msg:'No approval due date set'});
+  const score=out.filter(x=>x.ok).length*20;
+  return {score,fix:out.filter(x=>!x.ok).map(x=>x.msg)};
+}
+function formVals(f){const g=n=>{const e=f.elements.namedItem(n);return e?e.value:'';};
+  return {platform:g('platform'),caption:g('caption'),hashtags:g('hashtags'),time:g('post_time'),due:g('due_date'),approval:g('approval'),status:g('status'),
+    media:!!(g('visual').trim()||$1('#upx img, #upx video'))};}
+
+function enhanceEditor(p){
+  const f=document.getElementById('pf');if(!f||f.dataset.p1)return;f.dataset.p1='1';
+  const h2=f.querySelector('h2');
+  const top=document.createElement('div');top.className='p1 p1-top';
+  top.innerHTML='<div class="p1-stepw"></div><div class="p1-ready"><div class="p1-rd"></div><div class="p1-rt"><b>Readiness checklist</b><small>A checklist score, not a performance prediction.</small><ul class="p1-fix"></ul></div></div>';
+  (h2||f.firstChild).insertAdjacentElement('afterend',top);
+  const bar=document.createElement('div');bar.className='p1 p1-savebar';bar.hidden=true;
+  bar.innerHTML='<span class="msg">Unsaved changes</span><span class="acts"><button type="button" class="p1-cancel">Cancel</button><button type="button" class="p1-save">Save changes</button></span>';
+  f.appendChild(bar);
+  const snap=()=>JSON.stringify([...new FormData(f).entries()].map(([k,v])=>[k,typeof v==='string'?v:'file']));
+  let base=snap(),saved=false;
+  const paint=()=>{const v=formVals(f);
+    $1('.p1-stepw',top).innerHTML=stepper(v.status,v.approval);
+    const r=readiness(v),rd=$1('.p1-rd',top),d0=rd.querySelector('.p1-dial');if(d0)setDial(d0,r.score);else{rd.innerHTML=dial(r.score,'Readiness',104);kick(rd);}
+    $1('.p1-fix',top).innerHTML=r.fix.length?r.fix.map(x=>`<li>${esc(x)}</li>`).join(''):'<li class="good">Everything on the checklist is covered.</li>';
+    if(!saved){const dirty=snap()!==base;bar.hidden=!dirty;bar.classList.remove('saved');$1('.msg',bar).textContent='Unsaved changes';}
+  };
+  f.addEventListener('input',paint);f.addEventListener('change',paint);
+  const up=document.getElementById('upx');if(up)new MutationObserver(paint).observe(up,{childList:true,subtree:true});
+  $1('.p1-cancel',bar).onclick=()=>{f.reset();saved=false;paint();};
+  $1('.p1-save',bar).onclick=()=>f.requestSubmit();
+  f.addEventListener('submit',()=>{saved=true;bar.hidden=false;bar.classList.add('saved');$1('.msg',bar).textContent='✓ Saved';});
+  const pe=document.getElementById('pe');
+  if(pe)new MutationObserver(()=>{if(pe.textContent.trim()){saved=false;paint();}}).observe(pe,{childList:true,characterData:true,subtree:true});
+  paint();
+}
+const _pf=window.postForm;
+window.postForm=async function(){edPost=arguments[0]||{};prevAs=null;const r=await _pf.apply(this,arguments);try{enhanceEditor(arguments[0]||{});}catch(e){console.error('p1 editor',e);}return r;};
+
+/* A (client). stepper on the one-at-a-time view */
+const _cv=window.clientView;
+if(typeof _cv==='function')window.clientView=function(){
+  const r=_cv.apply(this,arguments);
+  try{if(!lv&&posts[idx]){const pc=$1('#cm .card .pc');if(pc&&!$1('#cm .p1-steps')){const w=document.createElement('div');w.className='p1 p1-stepw client';w.innerHTML=stepper(posts[idx].status,posts[idx].approval);pc.parentNode.insertBefore(w,pc);}}}catch(e){console.error('p1 client',e);}
+  return r;};
+
+/* C. pacing */
+const pkey=()=>'p1pace:'+cid;
+function paceStore(){try{if(sb===realSb)return JSON.parse(localStorage.getItem(pkey())||'{}');}catch(e){}return window.__p1pace=window.__p1pace||{};}
+function paceSave(o){try{if(sb===realSb){localStorage.setItem(pkey(),JSON.stringify(o));return;}}catch(e){}window.__p1pace=o;}
+function paceRows(){
+  const y=month.getFullYear(),m=month.getMonth(),pre=y+'-'+String(m+1).padStart(2,'0'),wk=new Date(y,m+1,0).getDate()/7,st=paceStore();
+  return PLATFORMS.map(pl=>{
+    const n=posts.filter(p=>p.platform===pl&&(p.post_date||'').startsWith(pre)).length,g=+GOALS[pl]||0;
+    if(!g&&!n&&!st[pl])return null;
+    const o=st[pl]||{},t=o.t!=null?+o.t:Math.max(1,Math.round(g*wk)),mn=o.m!=null?+o.m:Math.max(1,Math.round(t*.7));
+    const state=n<mn?'Under-posting':n>Math.ceil(t*1.15)?'Ahead':'On track';
+    return {pl,n,t,mn,state,score:t?n/t*100:100};
+  }).filter(Boolean);
+}
+function paceHtml(){
+  const rows=paceRows(),mn=month.toLocaleDateString('en-US',{month:'long'});
+  if(!rows.length)return '';
+  return `<div class="glass-card p1 p1-pace"><div class="p1-h"><h3>Posting pace · ${esc(mn)}</h3><small>Counts planned posts, not performance. <button type="button" class="btn-secondary btn-sm" data-p1rep="1">Monthly report</button></small></div>
+  <div class="p1-pgrid">${rows.map(r=>`<div class="p1-prow"><div>${dial(r.score,r.pl+' pace',84)}</div><div class="p1-pinfo"><b>${esc(r.pl)}</b>
+  <span class="p1-chip ${r.state==='On track'?'t-ok':r.state==='Ahead'?'t-info':'t-bad'}">${r.state}</span>
+  <small>${r.n} planned · target <input type="number" min="0" value="${r.t}" data-pt="${esc(r.pl)}" aria-label="${esc(r.pl)} monthly target"> · min <input type="number" min="0" value="${r.mn}" data-pm="${esc(r.pl)}" aria-label="${esc(r.pl)} monthly minimum"></small></div></div>`).join('')}</div>
+  <small class="p1-note">Defaults come from your weekly goals. Edited targets are kept in this browser only${sb===realSb?'':' (demo: this session only)'}.</small></div>`;
+}
+
+/* D. alerts */
+function alertList(){
+  if(!posts.length)return [];
+  const td=TD(),a=[],live=posts.filter(p=>p.status!=='Posted'),win=[0,1,2,3,4].map(i=>addDays(td,i));
+  live.filter(p=>p.approval==='Pending'&&p.due_date&&p.due_date<td).length&&a.push({t:'t-bad',go:'approvals',m:`${live.filter(p=>p.approval==='Pending'&&p.due_date&&p.due_date<td).length} post(s) are overdue for client approval`});
+  const soon=live.filter(p=>{if(!p.post_date||p.approval==='Approved')return false;const t=new Date(p.post_date+'T'+((p.post_time||'00:00').slice(0,5))+':00').getTime(),d=t-Date.now();return d>0&&d<864e5;});
+  soon.length&&a.push({t:'t-bad',go:'approvals',m:`${soon.length} post(s) go live within 24 hours and aren't approved`});
+  const used=[...new Set(posts.map(p=>p.platform))].filter(pl=>(+GOALS[pl]||0)>0||true);
+  const miss=used.filter(pl=>!live.some(p=>p.platform===pl&&win.includes(p.post_date)));
+  miss.length&&a.push({t:'t-warn',go:'calendar',m:`Nothing scheduled in the next 5 days on ${miss.join(', ')}`});
+  const empty=win.filter(d=>{const w=new Date(d+'T00:00').getDay();return w>0&&w<6&&!posts.some(p=>p.post_date===d);});
+  empty.length&&a.push({t:'t-info',go:'calendar',m:'Empty weekday'+(empty.length>1?'s':'')+': '+empty.map(d=>new Date(d+'T00:00').toLocaleDateString('en',{weekday:'short',day:'numeric'})).join(', ')});
+  return a.slice(0,4);
+}
+const alertsHtml=()=>alertList().map(x=>`<button type="button" class="p1-alert ${x.t}" data-p1go="${x.go}"><span>${x.t==='t-bad'?'⚠':x.t==='t-warn'?'⏱':'ℹ'}</span><b>${esc(x.m)}</b><em>${x.go==='approvals'?'Open approvals':'Open calendar'} ›</em></button>`).join('');
+
+/* E. approval pipeline */
+let pFilter='Waiting';
+function pipeHtml(){
+  const td=TD(),all=posts.filter(p=>p.status!=='Posted');
+  const isOver=p=>p.approval==='Pending'&&p.due_date&&p.due_date<td;
+  const F={Waiting:p=>p.approval!=='Approved',Overdue:isOver,Changes:p=>p.approval==='Changes requested',Approved:p=>p.approval==='Approved',All:()=>true};
+  const cnt=k=>all.filter(F[k]).length;
+  const rows=all.filter(F[pFilter]||F.All).sort((a,b)=>(isOver(b)-isOver(a))||(a.due_date||a.post_date||'9999').localeCompare(b.due_date||b.post_date||'9999'));
+  const row=p=>{const dl=p.due_date?day(p.due_date,td):null,over=isOver(p);
+    const fill=dl==null?0:over?100:clamp(100-dl/7*100,4,100);
+    const txt=dl==null?(p.approval==='Approved'?'Approved':'No due date'):over?`Overdue ${-dl}d`:dl===0?'Due today':`Due in ${dl}d`;
+    const chip=p.approval==='Changes requested'?'t-bad':p.approval==='Approved'?'t-ok':'t-warn';
+    return `<div class="p1-row${over?' over':''}"><span class="p1-pi">${picon(p.platform)}</span><div class="p1-rb"><div class="p1-cap">${esc((p.caption||'No caption yet').replace(/\s+/g,' ').slice(0,110))}</div>
+    <div class="p1-meta">${esc(p.platform)} · ${esc(p.post_date||'No date')}${p.post_time?' '+esc(p.post_time.slice(0,5)):''} <span class="p1-chip ${chip}">${esc(p.approval==='Changes requested'?'Changes requested':p.status)}</span>${over?'<span class="p1-chip t-bad">Overdue</span>':''}</div>
+    <div class="p1-bar ${over?'t-bad':''}" title="${txt}"><i style="width:${fill}%"></i></div><small>${txt}</small></div>
+    <div class="p1-ra">${p.approval!=='Approved'?`<button type="button" class="btn-primary btn-sm" data-p1ap="${esc(p.id)}">Approve ✓</button>`:''}<button type="button" class="btn-secondary btn-sm" data-p1ed="${esc(p.id)}">Open &amp; edit</button></div></div>`;};
+  return `<div class="p1 p1-pipe"><div class="p1-chips">${Object.keys(F).map(k=>`<button type="button" class="${k===pFilter?'on':''}" data-p1f="${k}">${k} <b>${cnt(k)}</b></button>`).join('')}</div>
+  ${rows.length?rows.map(row).join(''):'<div class="glass-card"><p class="muted-text">Nothing in this view. 🎉</p></div>'}</div>`;
+}
+
+/* rendering + wiring */
+const put=(el,html)=>{if(el&&el.__h!==html){el.innerHTML=html;el.__h=html;}};
+function slot(parent,id,first){let e=document.getElementById(id);if(!e&&parent){e=document.createElement('div');e.id=id;e.className='p1-slot';first?parent.insertBefore(e,parent.firstChild):parent.appendChild(e);}return e;}
+function refresh(){
+  if(typeof posts==='undefined'||!cid)return;
+  try{galleryScan();}catch(e){console.error('p2 gallery',e);}
+  if(!document.getElementById('workspaceMain'))return;
+  try{
+    const ov=document.getElementById('view-overview'),cal=document.getElementById('view-calendar'),gr=document.getElementById('approvalsGrid');
+    const al=alertsHtml();
+    if(ov){put(slot(ov,'p1AlertsOv',true),al);put(slot(ov,'p1Pace',false),paceHtml());}
+    if(cal)put(slot(cal,'p1AlertsCal',true),al);
+    if(gr&&!gr.querySelector('.p1-pipe')){gr.innerHTML=pipeHtml();gr.__h=null;}
+    else if(gr){const h=pipeHtml();if(gr.__h!==h){gr.innerHTML=h;gr.__h=h;}}
+    overviewDeltas();topBars();previewScan();reportBtns();kick(document);
+  }catch(e){console.error('p1 refresh',e);}
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest&&e.target.closest('[data-p1go],[data-p1f],[data-p1ap],[data-p1ed]');if(!t)return;
+  if(t.dataset.p1go){const b=document.querySelector(`.nav-item[data-tab="${t.dataset.p1go}"]`);b&&b.click();}
+  else if(t.dataset.p1f){pFilter=t.dataset.p1f;const g=document.getElementById('approvalsGrid');g.__h=null;refresh();}
+  else if(t.dataset.p1ap){(async()=>{const r=await sb.from('posts').update({approval:'Approved',status:'Approved'}).eq('id',t.dataset.p1ap);
+    if(r&&r.error)return alert('Error: '+r.error.message);await loadPosts();adminView();toast('Post approved!');})();}
+  else if(t.dataset.p1ed){const p=posts.find(x=>x.id===t.dataset.p1ed);if(p){postForm(p);document.getElementById('dlg').addEventListener('close',async()=>{await loadPosts();adminView();},{once:true});}}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;if(!t.dataset||(t.dataset.pt==null&&t.dataset.pm==null))return;
+  const pl=t.dataset.pt!=null?t.dataset.pt:t.dataset.pm,st=paceStore();st[pl]=st[pl]||{};st[pl][t.dataset.pt!=null?'t':'m']=Math.max(0,+t.value||0);paceSave(st);
+  const p=document.getElementById('p1Pace');if(p)p.__h=null;refresh();
+});
+/* ===== Phase 2: deltas, top-post bars, preview-as, gallery, monthly report ===== */
+const mkey=(y,m)=>y+'-'+String(m+1).padStart(2,'0');
+function monthStats(y,m){const ps=posts.filter(p=>(p.post_date||'').startsWith(mkey(y,m))),tr=ps.filter(p=>p.reach!=null);
+  return {ps,n:ps.length,tracked:tr.length,reach:tr.reduce((a,p)=>a+(+p.reach||0),0),eng:tr.reduce((a,p)=>a+(+p.engagements||0),0)};}
+const prevOf=()=>{const y=month.getFullYear(),m=month.getMonth();return monthStats(m?y:y-1,m?m-1:11);};
+const delta=(c,p)=>p>0?Math.round((c-p)/p*100):null;
+const deltaHtml=d=>d==null?'':`<span class="p1-delta ${d>=0?'t-ok':'t-bad'}" title="Compared with last month">${d>=0?'▲':'▼'} ${Math.abs(d)}% vs last month</span>`;
+function overviewDeltas(){
+  if(!document.getElementById('view-overview'))return;
+  const c=monthStats(month.getFullYear(),month.getMonth()),p=prevOf();
+  const set=(id,html)=>{const el=document.getElementById(id);if(!el)return;let b=document.getElementById('p1d_'+id);
+    if(!b){b=document.createElement('span');b.id='p1d_'+id;b.className='p1 p1-dwrap';el.parentNode.insertBefore(b,el.nextSibling);}
+    if(b.__h!==html){b.innerHTML=html;b.__h=html;}};
+  set('ovTotalReach',c.tracked&&p.tracked?deltaHtml(delta(c.reach,p.reach)):'');
+  set('ovScheduledCount',p.n?deltaHtml(delta(c.n,p.n)):'');
+}
+
+/* top posts: bar versus average */
+function topBars(){
+  const body=document.getElementById('anTopBody');if(!body||body.querySelector('.p1-tb'))return;
+  const rows=[...body.querySelectorAll('.top-row')];if(!rows.length)return;
+  const rs=posts.filter(p=>p.reach!=null).map(p=>+p.reach||0),avg=rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:0;
+  const vals=rows.map(r=>{const p=posts.find(x=>x.id===r.dataset.openPost);return p?+p.reach||0:0;}),mx=Math.max(...vals,1);
+  rows.forEach((r,i)=>{const d=document.createElement('div');d.className='p1 p1-tb';
+    d.innerHTML=`<div class="p1-bar"><i style="width:${Math.max(4,vals[i]/mx*100)}%"></i>${avg?`<u style="left:${Math.min(100,avg/mx*100)}%" title="Average post"></u>`:''}</div><small>${avg?(vals[i]/avg).toFixed(1)+'× the average post':''}</small>`;
+    (r.firstElementChild||r).appendChild(d);});
+  body.insertAdjacentHTML('beforeend','<small class="p1 p1-note p1-tb">Reach is whatever the agency enters or imports. The tick on each bar marks the average of all tracked posts.</small>');
+}
+
+/* preview as */
+let edPost={},prevAs=null;
+const PAS=['Instagram','Facebook','LinkedIn','TikTok'],CUT={Instagram:125,Facebook:477,LinkedIn:210,TikTok:100};
+function previewScan(){
+  const f=document.getElementById('pf'),box=document.getElementById('pvw');if(!f||!box||!f.elements.namedItem('platform'))return;
+  let bar=document.getElementById('p1PAS');
+  if(!bar){bar=document.createElement('div');bar.id='p1PAS';bar.className='p1 p1-pas';box.parentNode.insertBefore(bar,box);}
+  const pl=prevAs||f.platform.value;
+  const h='<span class="lbl">Preview as</span>'+PAS.map(x=>`<button type="button" data-p1pa="${x}" class="${x===pl?'on':''}">${x}</button>`).join('')+'<small>An approximation: cut-offs are typical lengths, not exact.</small>';
+  if(bar.__h!==h){bar.innerHTML=h;bar.__h=h;}
+  const card=box.querySelector('.pc');if(!card||card.dataset.pa||!PAS.includes(pl))return;
+  let cap=f.caption.value||'';const cut=CUT[pl];if(cap.length>cut)cap=cap.slice(0,cut).trimEnd()+'… more';
+  box.innerHTML=postCard({...edPost,platform:pl,account:f.account.value,format:f.format.value,caption:cap,visual:f.visual.value,hashtags:f.hashtags.value,post_date:f.post_date.value});
+  const c=box.querySelector('.pc');if(c)c.dataset.pa='1';
+}
+
+/* gallery: counter and +N overflow */
+const gCache={},gBusy={},gIdx={};
+const srcOf=m=>m.demo_src||(m.drive_file_id?`https://drive.google.com/thumbnail?id=${encodeURIComponent(m.drive_file_id)}&sz=w800`:'');
+function buildGal(card,id,rows){
+  const imgs=rows.filter(m=>m.status==='done'&&(m.mime_type||'').startsWith('image/')&&srcOf(m));
+  if(imgs.length<2||!card.querySelector('.ph'))return;
+  const MAXT=4,g=document.createElement('div');g.className='p1 p1-gal';let i=Math.min(gIdx[id]||0,imgs.length-1);
+  const draw=()=>{
+    const th=imgs.slice(0,MAXT).map((m,k)=>{const over=imgs.length>MAXT&&k===MAXT-1;
+      return `<button type="button" class="${k===i||(over&&i>=k)?'on':''}" data-gi="${k}" aria-label="${over?'Show '+(imgs.length-MAXT+1)+' more images':'Image '+(k+1)}"><img src="${esc(srcOf(m))}" alt="">${over?`<span>+${imgs.length-MAXT+1}</span>`:''}</button>`;}).join('');
+    g.innerHTML=`<div class="p1-gmain"><img src="${esc(srcOf(imgs[i]))}" alt="Image ${i+1} of ${imgs.length}"><span class="p1-gcount">${i+1}/${imgs.length}</span><button type="button" class="p1-gnav l" data-gd="-1" aria-label="Previous image">‹</button><button type="button" class="p1-gnav r" data-gd="1" aria-label="Next image">›</button></div><div class="p1-gthumbs">${th}</div>`;};
+  g.addEventListener('click',e=>{const t=e.target.closest('[data-gd],[data-gi]');if(!t)return;e.stopPropagation();
+    i=t.dataset.gd!=null?(i+ +t.dataset.gd+imgs.length)%imgs.length:+t.dataset.gi;gIdx[id]=i;draw();});
+  draw();card.querySelector('.ph').insertAdjacentElement('afterend',g);
+  card.querySelectorAll('.pimg,.vbox,.pvid').forEach(x=>x.style.display='none');
+}
+function galleryScan(){
+  const jobs=[],one=document.querySelector('#cm .card > .pc');
+  if(one&&!lv&&posts[idx])jobs.push([one,posts[idx].id]);
+  const pv=document.querySelector('#pvw .pc');if(pv&&edPost&&edPost.id)jobs.push([pv,edPost.id]);
+  jobs.forEach(([card,id])=>{
+    if(card.querySelector('.p1-gal'))return;const c=gCache[id];
+    if(c&&Date.now()-c.t<30000){buildGal(card,id,c.rows);return;}
+    if(gBusy[id])return;gBusy[id]=1;
+    Promise.resolve(sb.from('post_media').select('*').eq('post_id',id).order('created_at',{ascending:true}))
+      .then(r=>{gCache[id]={t:Date.now(),rows:(r&&r.data)||[]};}).catch(()=>{gCache[id]={t:Date.now(),rows:[]};})
+      .finally(()=>{gBusy[id]=0;galleryScan();});
+  });
+}
+
+/* monthly client report (print / save as PDF) */
+function reportHtml(){
+  const y=month.getFullYear(),m=month.getMonth(),c=monthStats(y,m),pv=prevOf();
+  const cname=(clients.find(x=>x.id===cid)||{}).name||'Client',mname=month.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const pmName=new Date(m?y:y-1,m?m-1:11,1).toLocaleDateString('en-US',{month:'long'});
+  const posted=c.ps.filter(p=>p.status==='Posted').length,appr=c.ps.filter(p=>p.approval==='Approved').length;
+  const wait=c.ps.filter(p=>p.approval==='Pending'&&p.status!=='Posted').length,chg=c.ps.filter(p=>p.approval==='Changes requested').length;
+  const rate=c.reach?c.eng/c.reach*100:0,dR=c.tracked&&pv.tracked?delta(c.reach,pv.reach):null;
+  const plats=PLATFORMS.map(pl=>{const a=c.ps.filter(p=>p.platform===pl);return {pl,n:a.length,posted:a.filter(p=>p.status==='Posted').length,reach:a.filter(p=>p.reach!=null).reduce((s,p)=>s+(+p.reach||0),0)};}).filter(r=>r.n);
+  const top=c.ps.filter(p=>p.reach!=null).sort((a,b)=>(+b.reach||0)-(+a.reach||0)).slice(0,3);
+  const f=n=>Math.round(n).toLocaleString();
+  return `<div class="rp-page"><div class="rp-h"><div><small>Monthly social media report</small><h1>${esc(cname)}</h1></div><div class="rp-m">${esc(mname)}</div></div>
+  <div class="rp-k"><div><b>${c.n}</b><small>posts planned</small></div><div><b>${posted}</b><small>published</small></div><div><b>${c.tracked?f(c.reach):'–'}</b><small>total reach${dR!=null?` <em class="${dR>=0?'up':'dn'}">${dR>=0?'▲':'▼'} ${Math.abs(dR)}% vs ${esc(pmName)}</em>`:''}</small></div><div><b>${c.tracked?rate.toFixed(1)+'%':'–'}</b><small>engagement rate</small></div></div>
+  <h2>By platform</h2><table><tr><th>Platform</th><th>Posts</th><th>Published</th><th>Reach</th></tr>${plats.map(r=>`<tr><td>${esc(r.pl)}</td><td>${r.n}</td><td>${r.posted}</td><td>${r.reach?f(r.reach):'–'}</td></tr>`).join('')||'<tr><td colspan="4">No posts this month.</td></tr>'}</table>
+  <h2>Top posts</h2>${top.length?`<ol>${top.map(p=>`<li><b>${esc(p.platform)}</b> · ${esc(p.post_date||'')} · ${f(+p.reach||0)} reach<br><span>${esc((p.caption||'').replace(/\s+/g,' ').slice(0,110))}</span></li>`).join('')}</ol>`:'<p>No results have been entered for this month yet.</p>'}
+  <h2>Approvals</h2><p>${appr} of ${c.n} posts approved${wait?`, ${wait} waiting for approval`:''}${chg?`, ${chg} with changes requested`:''}.</p>
+  <p class="rp-f">Reach and engagement figures are entered or imported by your agency from each platform’s own insights. Prepared by LoomWellOps.</p></div>`;
+}
+function closeReport(){const o=document.getElementById('p1Report');if(o)o.remove();}
+function openReport(){closeReport();const o=document.createElement('div');o.id='p1Report';o.className='p1';
+  o.innerHTML='<div class="rp-bar"><button type="button" data-rp="print">Print / Save as PDF</button><button type="button" data-rp="close">Close</button></div>'+reportHtml();
+  o.addEventListener('click',e=>{const t=e.target.closest('[data-rp]');if(!t)return;t.dataset.rp==='print'?window.print():closeReport();});
+  document.body.appendChild(o);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeReport();});
+function reportBtns(){const c=document.querySelector('#liveAnalyticsGrid .an-controls');
+  if(c&&!c.querySelector('[data-p1rep]')){const b=document.createElement('button');b.type='button';b.className='btn-secondary btn-pill p1';b.dataset.p1rep='1';b.textContent='Monthly report';c.appendChild(b);}}
+document.addEventListener('click',e=>{
+  if(e.target.closest&&e.target.closest('[data-p1rep]')){openReport();return;}
+  const t=e.target.closest&&e.target.closest('[data-p1pa]');
+  if(t){prevAs=t.dataset.p1pa;const c=document.querySelector('#pvw .pc');if(c)delete c.dataset.pa;previewScan();}
+});
+
+let tmr;
+new MutationObserver(ms=>{if(ms.every(m=>m.target.closest&&m.target.closest('.p1')))return;clearTimeout(tmr);tmr=setTimeout(refresh,150);})
+  .observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+<script src="polish.js" defer></script>
 </body>
 </html>
